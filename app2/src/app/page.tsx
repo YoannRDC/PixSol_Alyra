@@ -1,16 +1,12 @@
-import Header from "../components/Header";
-import SetupVote from "../components/SetupVote";
-import ViewVotes from "../components/ViewVotes";
-import style from "../styles/Home.module.css";
+import ViewVotes from './components/ViewVotes';
+import SetupVote from './components/SetupVote';
 
-const Home: React.FC = () => {
+export default function Home() {
   return (
-    <main className="bg-black pb-8">
-      <Header />
+    <div>
+      <h1 className="text-3xl font-bold mb-4">DAO Vote App</h1>
       <SetupVote />
       <ViewVotes />
-    </main>
+    </div>
   );
 }
-
-export default Home;
