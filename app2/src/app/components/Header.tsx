@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { ClientWalletMultiButton } from "./ClientWalletMultiButton";
 
 const Header: React.FC = () => {
     return (
@@ -9,7 +9,7 @@ const Header: React.FC = () => {
             <div className="text-2xl cursor-pointer font-bold text-blue-500 flex items-center">
                 DAO Vote App
             </div>
-            <WalletMultiButton />
+            <ClientWalletMultiButton />
         </div>
     );
 };

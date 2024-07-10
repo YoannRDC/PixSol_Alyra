@@ -1,35 +1,23 @@
-'use client';
+import { ReactNode } from 'react';
+import { AppProvider } from './contexts/AppProvider';
+import dynamic from 'next/dynamic';
+import './globals.css';
 
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
-import { AppProvider } from "./contexts/AppProvider";
-import { useMemo } from "react";
-import "./globals.css";
-require("@solana/wallet-adapter-react-ui/styles.css");
+const ClientWalletProviderComponent = dynamic(
+  () => import('./components/ClientWalletProvider').then(mod => mod.ClientWalletProvider),
+  { ssr: false }
+);
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const endpoint = clusterApiUrl("devnet");
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} autoConnect>
-            <WalletModalProvider>
-              <AppProvider>
-                {children}
-              </AppProvider>
-            </WalletModalProvider>
-          </WalletProvider>
-        </ConnectionProvider>
+        <ClientWalletProviderComponent>
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </ClientWalletProviderComponent>
       </body>
     </html>
-  )
+  );
 }
