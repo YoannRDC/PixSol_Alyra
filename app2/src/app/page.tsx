@@ -1,16 +1,15 @@
-import Header from "../components/Header";
-import SetupVote from "../components/SetupVote";
-import ViewVotes from "../components/ViewVotes";
-import style from "../styles/Home.module.css";
+'use client';
 
-const Home: React.FC = () => {
+import Header from "./components/Header";
+import SetupVote from "./components/SetupVote";
+import ViewVotes from "./components/ViewVotes";
+
+export default function Home() {
   return (
-    <main className="bg-black pb-8">
+    <div>
       <Header />
       <SetupVote />
       <ViewVotes />
-    </main>
+    </div>
   );
 }
-
-export default Home;

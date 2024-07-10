@@ -1,8 +1,9 @@
-'use client'
-import React, { useState } from 'react';
-import { useAppContext } from "../context/context";
+'use client';
 
-const SetupVote = () => {
+import React, { useState } from 'react';
+import { useAppContext } from "../contexts/AppContext";
+
+const SetupVote: React.FC = () => {
     const { createVote } = useAppContext();
     const [topic, setTopic] = useState('');
     const [description, setDescription] = useState('');
@@ -12,7 +13,7 @@ const SetupVote = () => {
     const creerVote = () => {
         const optionsArray = options.split(',').map(option => option.trim());
 
-        const currentTimestamp = new Date().getTime() / 1000;
+        const currentTimestamp = Math.floor(Date.now() / 1000);
         const durationInSeconds = parseInt(duration) * 24 * 60 * 60;
         const deadline = currentTimestamp + durationInSeconds;
 
