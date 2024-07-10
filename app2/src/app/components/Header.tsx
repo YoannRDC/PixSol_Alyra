@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ClientWalletMultiButton } from "./ClientWalletMultiButton";
 
 const Header: React.FC = () => {
@@ -9,6 +10,11 @@ const Header: React.FC = () => {
             <div className="text-2xl cursor-pointer font-bold text-blue-500 flex items-center">
                 DAO Vote App
             </div>
+            <nav>
+                <Link href="/" className="mr-4 text-white hover:text-blue-300">Home</Link>
+                <Link href="/mint" className="mr-4 text-white hover:text-blue-300">Mint Page</Link>
+                <Link href="/mint" className="mr-4 text-white hover:text-blue-300">Marketplace Page</Link>
+            </nav>
             <ClientWalletMultiButton />
         </div>
     );
