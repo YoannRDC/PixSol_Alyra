@@ -49,13 +49,11 @@ export default function Home() {
             for (let y = 0; y < height; y++) {
               const key = `x${selectedArea.start.x + x}y${selectedArea.start.y + y}`
               const index = (y * width + x) * 4
-              newPixelData[key] = {
-                imageData: new ImageData(
-                  imageData.data.slice(index, index + 4),
-                  1,
-                  1
-                )
-              }
+              const r = imageData.data[index]
+              const g = imageData.data[index + 1]
+              const b = imageData.data[index + 2]
+              const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+              newPixelData[key] = { color }
             }
           }
           setPixelData(newPixelData)
@@ -67,11 +65,23 @@ export default function Home() {
 
   const handleBuy = useCallback(async () => {
     if (selectedArea && connected && publicKey) {
-      // Implement your buy logic here
       console.log('Buying pixels:', selectedArea, 'with wallet:', publicKey.toString())
-      // You would typically make an API call here to process the purchase
-      // For example:
-      // await buyPixels(selectedArea, publicKey.toString(), pixelData)
+      
+      // Log all pixel addresses and their associated colors
+      const pixelsToBuy: {[key: string]: string} = {}
+      for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+        for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+          const key = `x${x}y${y}`
+          if (pixelData[key] && pixelData[key].color) {
+            pixelsToBuy[key] = pixelData[key].color!
+          }
+        }
+      }
+      console.log('Pixels to buy:', pixelsToBuy)
+
+      // Here you would typically make an API call to process the purchase
+      // await buyPixels(pixelsToBuy, publicKey.toString())
+
       // Then clear the selection and update the UI
       setSelectedArea(null)
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
@@ -18,6 +18,13 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const { connected } = useWallet()
   const [selectedOption, setSelectedOption] = useState<'color' | 'image'>('color')
 
+  const isMultiplePixelsSelected = useMemo(() => {
+    if (!selectedArea) return false
+    const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
+    const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
+    return width > 1 || height > 1
+  }, [selectedArea])
+
   const handleButtonClick = () => {
     if (connected) {
       if (selectedArea) {
@@ -32,7 +39,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
+    if (file && isMultiplePixelsSelected) {
       onImageUpload(file)
     }
   }
@@ -45,13 +52,24 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           <p>From: x{selectedArea.start.x}y{selectedArea.start.y}</p>
           <p>To: x{selectedArea.end.x}y{selectedArea.end.y}</p>
           <div>
-            <button className={styles.buyButton} onClick={() => setSelectedOption('color')}>Color</button>
-            <button className={styles.buyButton} onClick={() => setSelectedOption('image')}>Image</button>
+            <button className={styles.imageButton} onClick={() => setSelectedOption('color')}>Color</button>
+            <button 
+            className={styles.imageButton}
+              onClick={() => setSelectedOption('image')}
+              disabled={!isMultiplePixelsSelected}
+              title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
+            >
+              Image
+            </button>
           </div>
           {selectedOption === 'color' ? (
             <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
           ) : (
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
+            isMultiplePixelsSelected ? (
+              <input type="file" accept="image/*" onChange={handleImageUpload} />
+            ) : (
+              <p>Select at least 2x2 pixels to upload an image</p>
+            )
           )}
         </>
       ) : (
