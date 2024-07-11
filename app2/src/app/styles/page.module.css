@@ -1,0 +1,23 @@
+.container {
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pixelBoard {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.infoBoard {
+  flex: 1;
+}
