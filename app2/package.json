@@ -16,12 +16,16 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.94.0",
+    "ioredis": "^5.4.1",
     "next": "14.2.4",
+    "pino-pretty": "^11.2.1",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "redis": "^4.6.15"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.5",
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
