@@ -10,14 +10,18 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
+    "@react-spectrum/color": "^3.0.0-beta.34",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.94.0",
+    "ioredis": "^5.4.1",
     "next": "14.2.4",
+    "pino-pretty": "^11.2.1",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "redis": "^4.6.15"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.5",

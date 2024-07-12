@@ -1,12 +1,160 @@
-import ViewVotes from './components/ViewVotes';
-import SetupVote from './components/SetupVote';
+'use client'
+
+import { useState, useCallback, useEffect } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import PixelBoard from './components/PixelBoard'
+import InfoBoard from './components/InfoBoard'
+import styles from './styles/page.module.css'
+
+const BOARD_SIZE = 20; // 20x20 grid
 
 export default function Home() {
+  const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
+  const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
+  const [isLoading, setIsLoading] = useState(true)
+  const { publicKey, connected } = useWallet()
+
+  useEffect(() => {
+    const loadPixelData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/pixels');
+        const pixels = await response.json();
+        const newPixelData = pixels.reduce((acc, pixel) => {
+          acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
+          return acc;
+        }, {} as { [key: string]: { color: string, owner: string } });
+        setPixelData(newPixelData);
+      } catch (error) {
+        console.error('Error loading pixel data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadPixelData();
+  }, []);
+
+  const handleSelectionChange = useCallback((selection: {start: {x: number, y: number}, end: {x: number, y: number}} | null) => {
+    setSelectedArea(selection);
+  }, []);
+
+  const handleColorChange = useCallback((color: string) => {
+    if (selectedArea) {
+      const newPixelData = { ...pixelData };
+      for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+        for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+          const key = `x${x}y${y}`;
+          newPixelData[key] = { ...newPixelData[key], color };
+        }
+      }
+      setPixelData(newPixelData);
+    }
+  }, [selectedArea, pixelData]);
+
+  const handleImageUpload = useCallback((image: File) => {
+    if (selectedArea) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const width = selectedArea.end.x - selectedArea.start.x + 1;
+          const height = selectedArea.end.y - selectedArea.start.y + 1;
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          const imageData = ctx.getImageData(0, 0, width, height);
+
+          const newPixelData = { ...pixelData };
+          for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+              const key = `x${selectedArea.start.x + x}y${selectedArea.start.y + y}`;
+              const index = (y * width + x) * 4;
+              const r = imageData.data[index];
+              const g = imageData.data[index + 1];
+              const b = imageData.data[index + 2];
+              const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+              newPixelData[key] = { ...newPixelData[key], color };
+            }
+          }
+          setPixelData(newPixelData);
+        }
+      };
+      img.src = URL.createObjectURL(image);
+    }
+  }, [selectedArea, pixelData]);
+
+  const handleBuy = useCallback(async () => {
+    if (selectedArea && connected && publicKey) {
+      console.log('Buying pixels:', selectedArea, 'with wallet:', publicKey.toString())
+      
+      const pixelsToBuy: {[key: string]: string} = {}
+      for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+        for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+          const key = `x${x}y${y}`
+          if (pixelData[key]) {
+            pixelsToBuy[key] = pixelData[key].color
+          }
+        }
+      }
+      console.log('Pixels to buy:', pixelsToBuy)
+
+      try {
+        const response = await fetch('/api/buy-pixels', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pixels: pixelsToBuy,
+            owner: publicKey.toString()
+          }),
+        });
+
+        if (response.ok) {
+          console.log('Pixels bought successfully');
+          // Refresh pixel data after purchase
+          const refreshResponse = await fetch('/api/pixels');
+          const refreshedPixels = await refreshResponse.json();
+          const newPixelData = refreshedPixels.reduce((acc, pixel) => {
+            acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
+            return acc;
+          }, {} as { [key: string]: { color: string, owner: string } });
+          setPixelData(newPixelData);
+        } else {
+          console.error('Error buying pixels');
+        }
+      } catch (error) {
+        console.error('Error buying pixels:', error);
+      }
+
+      setSelectedArea(null)
+    }
+  }, [selectedArea, connected, publicKey, pixelData]);
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-4">DAO Vote App</h1>
-      <SetupVote />
-      <ViewVotes />
+    <div className={styles.container}>
+      <h1 className={styles.title}>Pixel Board</h1>
+      <div className={styles.content}>
+        <div className={styles.pixelBoard}>
+          <PixelBoard 
+            onSelectionChange={handleSelectionChange} 
+            pixelData={pixelData} 
+            boardSize={BOARD_SIZE}
+            isLoading={isLoading}
+          />
+        </div>
+        <div className={styles.infoBoard}>
+          <InfoBoard
+            selectedArea={selectedArea}
+            onColorChange={handleColorChange}
+            onImageUpload={handleImageUpload}
+            onBuy={handleBuy}
+            isLoading={isLoading}
+            isConnected={connected}
+          />
+        </div>
+      </div>
     </div>
-  );
+  )
 }
