@@ -1,17 +1,12 @@
-[toolchain]
-
-[features]
-resolution = true
-skip-lint = false
-
 [programs.localnet]
-vote = "6wszu3thku8Dypb8hzGXS9kz6XPHXzzhWiTLaQwzzR2q"
+# pixel = "target/deploy/pixel-keypair.json"
+# governance = "target/deploy/governance-keypair.json"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
