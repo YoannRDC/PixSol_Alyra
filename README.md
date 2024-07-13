@@ -12,6 +12,13 @@ Define the PROGRAM_ID of the contract:
 -> src: via betsolpg.io -> build & deploy -> Program ID:
 -> dest: app/utils/constant.js
 
+Create a new Merkle tree
+-> ~/PixSol/app2/src/app/mint$ ts-node MerkelTreeService.ts
+-> Setup: 
+    -> npm install -g typescript
+    -> npm install -g ts-node
+    -> Create file tsconfig.json in the same directory as the script.
+
 //***********
 // Front
 //***********
