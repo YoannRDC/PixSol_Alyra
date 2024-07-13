@@ -1,5 +1,5 @@
 {
-  "name": "vote-app-front",
+  "name": "app2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,18 +9,31 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@project-serum/anchor": "^0.25.0",
-    "@solana/wallet-adapter-base": "^0.9.16",
-    "@solana/wallet-adapter-react": "^0.15.18",
-    "@solana/wallet-adapter-react-ui": "^0.9.16",
-    "@solana/wallet-adapter-wallets": "^0.18.7",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "next": "^12.1.4",
-    "react-hot-toast": "^2.3.0"
+    "@metaplex-foundation/js": "^0.20.1",
+    "@metaplex-foundation/mpl-bubblegum": "^4.1.0",
+    "@metaplex-foundation/umi": "^0.9.2",
+    "@metaplex-foundation/umi-bundle-defaults": "^0.9.2",
+    "@project-serum/anchor": "^0.26.0",
+    "@react-spectrum/color": "^3.0.0-beta.34",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "@solana/web3.js": "^1.95.0",
+    "ioredis": "^5.4.1",
+    "next": "14.2.4",
+    "pino-pretty": "^11.2.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "redis": "^4.6.15"
   },
   "devDependencies": {
-    "eslint": "8.21.0",
-    "eslint-config-next": "12.2.5"
+    "@types/bn.js": "^5.1.5",
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "^18",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "5.5.3"
   }
 }
