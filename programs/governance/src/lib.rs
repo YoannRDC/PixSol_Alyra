@@ -98,3 +98,8 @@ pub struct MintedPixelResult {
     pub y: u16,
     pub is_minted: bool,
 }
+
+
+// NOTE: Help to mint: 
+// https://crates.io/crates/mpl-bubblegum
+// https://medium.com/@KishiTheMechanic/tips-for-minting-multiple-compressed-nfts-cnfts-simultaneously-on-solana-4e01e06bae00

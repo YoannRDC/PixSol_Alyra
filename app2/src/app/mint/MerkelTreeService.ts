@@ -66,12 +66,7 @@ export async function fetchTree(context: Pick<Context, 'rpc'>): Promise<void> {
 // MAIN
 // *************
 
-(async () => {
-    const context: Pick<Context, 'rpc'> = { rpc: umi.rpc };
-  
-    // Create the Merkle tree
-    await createMerkleTree(context);
-  
-    // Fetch the Merkle tree
-    await fetchTree(context);
-  })();
+const context = { rpc: umi.rpc };
+
+createMerkleTree(context).catch(console.error);
+fetchTree(context).catch(console.error);
