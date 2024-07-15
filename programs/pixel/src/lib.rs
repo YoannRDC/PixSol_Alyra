@@ -1,12 +1,16 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer as SplTransfer};
+use anchor_spl::token::{self, Token, TokenAccount };
 use mpl_token_metadata::{
     accounts::{Metadata as MetadataAccount},
     types::DataV2,
 };
 use mpl_token_metadata::state::Metadata;
-/// ☝️We have to check how access metadata of the pixel.
-/// Check Method that we can find on Internet.
+// ☝️We have to check how access metadata of the pixel.
+// Check Method that we can find on Internet.
+// TODO: Create a variable to claim that the owner of the SC
+// Can withdraw his part of the Vault.
+// Search the different functions that can check metadatas of the pixels when someone
+// want to withdraw.
 
 declare_id!("AkJJwPqnKJghe5mU9QEXHg8BJxP5KreqtBNY91ofMNS2");
 
@@ -94,6 +98,9 @@ pub mod vault {
         require!(amount <= withdraw_amount, VaultError::WithdrawAmountTooHigh);
         require!(amount <= vault.total_balance, VaultError::InsufficientFunds);
 
+
+        // TODO: COUNTING HOW MANY Pixels => Counters a Person possess to
+        //Truly transfer him what he earns
         // Transfer tokens from vault to user
         token::transfer(
             CpiContext::new_with_signer(
