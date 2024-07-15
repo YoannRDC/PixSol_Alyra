@@ -15,7 +15,7 @@ dotenv.config({ path: '../../../../.env' });
 //const solanaRpcHttpsMainnet = process.env.SOLANA_RPC_HTTPS_MAINNET as string;
 const solanaRpcHttpsMainnet = process.env.SOLANA_DEVNET as string;
 if (!solanaRpcHttpsMainnet) {
-  throw new Error('SOLANA_RPC_HTTPS_MAINNET is not defined in the .env file');
+    throw new Error('SOLANA_RPC_HTTPS_MAINNET is not defined in the .env file');
 }
 
 // Initialiser Umi avec l'URL RPC

@@ -9,7 +9,7 @@ import { clusterApiUrl } from '@solana/web3.js';
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 interface ClientWalletProviderProps {
-  children: ReactNode;
+    children: ReactNode;
 }
 
 export const ClientWalletProvider: FC<ClientWalletProviderProps> = ({ children }) => {
