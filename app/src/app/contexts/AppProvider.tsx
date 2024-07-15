@@ -16,9 +16,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
   const program = useMemo(() => {
-    if (connection) {
-      return getProgram(connection, wallet ?? mockWallet());
+    if (connection && wallet) {
+      return getProgram(connection, wallet);
     }
+    return null;
   }, [connection, wallet]);
 
   useEffect(() => {

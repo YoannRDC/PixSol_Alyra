@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
 import PixelBoard from './components/PixelBoard'
 import InfoBoard from './components/InfoBoard'
 import styles from './styles/page.module.css'
@@ -12,7 +13,8 @@ export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
   const [isLoading, setIsLoading] = useState(true)
-  const { publicKey, connected } = useWallet()
+  const { connection } = useConnection()
+  const { publicKey, sendTransaction } = useWallet()
 
   useEffect(() => {
     const loadPixelData = async () => {
@@ -85,9 +87,7 @@ export default function Home() {
   }, [selectedArea, pixelData]);
 
   const handleBuy = useCallback(async () => {
-    if (selectedArea && connected && publicKey) {
-      console.log('Buying pixels:', selectedArea, 'with wallet:', publicKey.toString())
-      
+    if (selectedArea && publicKey) {
       const pixelsToBuy: {[key: string]: string} = {}
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
@@ -97,9 +97,27 @@ export default function Home() {
           }
         }
       }
-      console.log('Pixels to buy:', pixelsToBuy)
+
+      const numPixels = Object.keys(pixelsToBuy).length;
+      const totalCost = numPixels * 0.01 * 1e9; // 0.01 SOL per pixel, converted to lamports
+
+      const recipientPubkey = new PublicKey("M88kr8ntGbL6heuAYRXf4DULABTahMgEjje1sBkhFGD");
 
       try {
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: publicKey,
+            toPubkey: recipientPubkey,
+            lamports: totalCost,
+          })
+        );
+
+        const signature = await sendTransaction(transaction, connection);
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        console.log("Transaction signature", signature);
+
+        // Call your API to update the pixel data
         const response = await fetch('/api/buy-pixels', {
           method: 'POST',
           headers: {
@@ -107,7 +125,8 @@ export default function Home() {
           },
           body: JSON.stringify({
             pixels: pixelsToBuy,
-            owner: publicKey.toString()
+            owner: publicKey.toString(),
+            signature: signature,
           }),
         });
 
@@ -130,7 +149,7 @@ export default function Home() {
 
       setSelectedArea(null)
     }
-  }, [selectedArea, connected, publicKey, pixelData]);
+  }, [selectedArea, publicKey, connection, pixelData, sendTransaction]);
 
   return (
     <div className={styles.container}>
@@ -151,7 +170,7 @@ export default function Home() {
             onImageUpload={handleImageUpload}
             onBuy={handleBuy}
             isLoading={isLoading}
-            isConnected={connected}
+            isConnected={!!publicKey}
           />
         </div>
       </div>
