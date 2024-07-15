@@ -51,6 +51,7 @@ const secretKeyArray = new Uint8Array(secretKey);
 // Créer le keypair avec la clé secrète
 const solanaKeypair = umi.eddsa.createKeypairFromSecretKey(secretKeyArray);
 
+console.log("solanaKeypair.publicKey:", solanaKeypair.publicKey);
 
 // Fonction pour créer l'arbre Merkle
 async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
@@ -98,7 +99,7 @@ async function fetchTree(context: Pick<Context, 'rpc'>): Promise<void> {
 
 
 // Fonction pour Mint 1 NFT (sans collection associé)
-async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
+async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Promise<void> {
     console.log('Minting a cNFT...');
     try {
         const merkleTreeAccount = await fetchMerkleTree(umi, merkleTreeSigner.publicKey);
@@ -109,11 +110,14 @@ async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
 
         const leafOwner =  solanaKeypair.publicKey;
 
+        // Construire X100 et Y200 à partir des paramètres passés
+        const name = `PixSol X${x} Y${y}`;
+
         const mintLog = await mintV1(umi, {
             leafOwner: leafOwner,
             merkleTree: merkleTreeSigner.publicKey,
             metadata: {
-              name: 'PixSol X100 Y200', // TBD
+              name: name, // Utiliser la chaîne construite
               uri: 'https://example.com/my-cnft.json',
               sellerFeeBasisPoints: 500, // 5%
               collection: null,
@@ -122,8 +126,6 @@ async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
               ],
             },
           }).sendAndConfirm(umi)
-          
-
           
           console.log('CNFT minted: %s', JSON.stringify({
             signature: Array.from(mintLog.signature),
@@ -134,6 +136,7 @@ async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
         console.error('Error fetching Merkle Tree:', error);
     }
 }
+
 /*
 // Fonction pour Mint
 async function mintCNFTcollection(context: Pick<Context, 'rpc'>): Promise<void> {
@@ -191,11 +194,22 @@ async function mintCNFTcollection(context: Pick<Context, 'rpc'>): Promise<void> 
 // Fonction principale
 async function main() {
     console.log('Main starts...');
+
+    const treeAdress = "6yVd8QWmbvYw5ugA4SrnSPbikFo8BirqGwE3L3i42eHE";
+
     const context = { rpc: umi.rpc };
     await createMerkleTree(context);
     await fetchTree(context);
-    await mintCNFT(context);
-    await fetchTree(context);
+
+    const x1=50;
+    const y1=50;
+    await mintCNFT(context, x1, y1);
+
+    const x2=51;
+    const y2=51;
+    await mintCNFT(context, x2, y2);
+
+    //await fetchTree(context);
     console.log('Main ends...');
 }
 
