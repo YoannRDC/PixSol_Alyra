@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount };
-use mpl_token_metadata::{
-    accounts::{Metadata as MetadataAccount},
-    types::DataV2,
-};
+// use mpl_token_metadata::{
+//     accounts::{Metadata as MetadataAccount},
+//     types::DataV2,
+// };
 use mpl_token_metadata::state::Metadata;
 // ☝️We have to check how access metadata of the pixel.
 // Check Method that we can find on Internet.
