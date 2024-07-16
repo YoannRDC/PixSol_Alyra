@@ -9,9 +9,9 @@ use anchor_spl::token::{self, Token, TokenAccount};
 // Search the different functions that can check metadatas of the pixels when someone
 // want to withdraw.
 
-declare_id!("AkJJwPqnKJghe5mU9QEXHg8BJxP5KreqtBNY91ofMNS2");
+declare_id!("");
 
-
+const DEPOSIT_AMOUNT_PER_PIXEL: u64 = 900000;
 #[program]
 pub mod vault {
     use super::*;
@@ -30,7 +30,8 @@ pub mod vault {
     ///////////////////////
     /// Deposit        ////
     ///////////////////////
-    // Let see if we don't want to inpu the ids beginning, ids ends.
+    /// TODO: add a require : AmountToDeposit <= amount send inside the deposit function
+    /// With AmountToDeposit = PriceRentPixel * NumberOfPixelSelected
     pub fn deposit(ctx: Context<Deposit>, amount: u64, nft_id_beg: u32, nft_id_end: u32) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
         let user = &ctx.accounts.user;
@@ -44,21 +45,41 @@ pub mod vault {
         let x_end = coordEnd.x;
         let y_end = coordEnd.y;
         
+        let pixelCount = (x_end - x_beg +1)*(y_end - y_beg +1);
+        let deposit_amount = pixelCount as u64 * DEPOSIT_AMOUNT_PER_PIXEL; //Define TODO:
+
+        **user.to_account_info().try_borrow_mut_lamports()? -= deposit_amount;
+        **vault.to_account_info().try_borrow_mut_lamports()? += deposit_amount;
+
+
+        // OR
+
+
 
         // Transfer tokens from user of the Board to vault
-        token::transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                token::Transfer {
-                    from: ctx.accounts.user_token_account.to_account_info(),
-                    to: ctx.accounts.vault_token_account.to_account_info(),
-                    authority: user.to_account_info(),
-                },
-            ),
-            amount,
-        )?;
+        // token::transfer(
+        //     CpiContext::new(
+        //         ctx.accounts.token_program.to_account_info(),
+        //         token::Transfer {
+        //             from: ctx.accounts.user_token_account.to_account_info(),
+        //             to: ctx.accounts.vault_token_account.to_account_info(),
+        //             authority: user.to_account_info(),
+        //         },
+        //     ),
+        //     amount,
+        // )?;
+        // vault.total_balance += amount;
 
-        vault.total_balance += amount;
+        /// OR
+
+        // let cpi_context = CpiContext::new(
+        //     ctx.accounts.system_program.to_account_info(),
+        //     anchor_lang::system_program::Transfer {
+        //         from: user.to_account_info(),
+        //         to: vault.to_account_info(),
+        //     },
+        // );
+        // anchor_lang::system_program::transfer(cpi_context, deposit_amount)?;
 
         // Update matrix counters
         for x in x_beg..=x_end {
@@ -89,19 +110,47 @@ pub mod vault {
         let mut total_withdraw_amount = 0;
         let collection_pubKey = Pubkey::new_from_array([0xdf, 0xab, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 
-        for nft_id in ctx.accounts.user_nfts.iter() {
+        /// 👇Logic is kill if we cannot initiate AVector as NFT possess from the collection to user
+        // for nft_id in ctx.accounts.user_nfts.iter() {
 
+        //     require!(
+        //         is_nft_from_collection(*nft_id, &collection_pubKey),
+        //         VaultError::InvalidNFTCollection
+        //     );
+
+        //     let coordinates = get_coordinates_from_id(*nft_id);
+        //     let key = (coordinates.x, coordinates.y);
+
+        //     if let Some(count) = vault.matrix_counter.get_mut(&key) {
+        //         total_withdraw_amount += *count;
+        //         *count = 0; 
+        //     }
+        // }
+
+        /// CLAUDE SOLUTION 👇 TO rework with Tom implementation with JS: https://codefile.io/f/Ul0nBi38aa
+        // Assuming user_nfts is a TokenAccount containing the user's NFTs
+        let user_nfts_data = ctx.accounts.user_nfts.try_borrow_data()?;
+        let nft_count = user_nfts_data.len() / 32; // Assuming each NFT is represented by a 32-byte pubkey
+
+        for i in 0..nft_count {
+            let start = i * 32;
+            let end = start + 32;
+            let nft_pubkey = Pubkey::new(&user_nfts_data[start..end]);
+
+            // Here you would typically verify that this NFT belongs to the collection
+            // For this example, we'll use a placeholder check
             require!(
-                is_nft_from_collection(*nft_id, &collection_pubKey),
+                is_nft_from_collection(&nft_pubkey, &collection_pubkey),
                 VaultError::InvalidNFTCollection
             );
 
-            let coordinates = get_coordinates_from_id(*nft_id);
+            let nft_id = get_nft_id_from_pubkey(&nft_pubkey); // You need to implement this function
+            let coordinates = get_coordinates_from_id(nft_id);
             let key = (coordinates.x, coordinates.y);
 
             if let Some(count) = vault.matrix_counter.get_mut(&key) {
-                total_withdraw_amount += *count;
-                *count = 0; 
+                total_withdraw_amount += WITHDRAW_AMOUNT_PER_PIXEL;
+                *count = count.saturating_sub(1);
             }
         }
 
@@ -162,11 +211,11 @@ pub struct Deposit<'info> {
     pub vault: Account<'info, Vault>,
     #[account(mut)]
     pub user: Signer<'info>,
-    #[account(mut)]
-    pub user_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub vault_token_account: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
+    // #[account(mut)]
+    // pub user_token_account: Account<'info, TokenAccount>,
+    // #[account(mut)]
+    // pub vault_token_account: Account<'info, TokenAccount>,
+    // pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -180,8 +229,9 @@ pub struct Withdraw<'info> {
     #[account(mut)]
     pub vault_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
-    /// CHECK: We're reading NFT metadata, which is safe
-    pub user_nfts: Vec<u32>,
+    #[account(owner = *user.key)]
+    // pub user_nfts: Vec<u32>,
+    pub user_nfts: UncheckedAccount<'info>,
 }
 
 #[account]
