@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
-import { createSignerFromKeypair, generateSigner, signerIdentity, type Context } from '@metaplex-foundation/umi';
+import { createSignerFromKeypair, generateSigner, none, percentAmount, publicKey, signerIdentity, Umi, type Context } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { createTree, fetchMerkleTree, fetchTreeConfigFromSeeds, mintToCollectionV1, mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
+import { createNft } from '@metaplex-foundation/mpl-token-metadata';
 
 const solanaWeb3 = require('@solana/web3.js');
 const { MerkleTree } = require('merkletreejs');
@@ -38,7 +39,6 @@ const merkleTreeSigner = generateSigner(umi);
 // Create KeyPair
 // ******
 
-
 // Chemin par défaut de la clé secrète Solana
 const keyFilePath = path.join(os.homedir(), '.config', 'solana', 'id.json');
 
@@ -51,7 +51,16 @@ const secretKeyArray = new Uint8Array(secretKey);
 // Créer le keypair avec la clé secrète
 const solanaKeypair = umi.eddsa.createKeypairFromSecretKey(secretKeyArray);
 
-console.log("solanaKeypair.publicKey:", solanaKeypair.publicKey);
+// Set my my key to umi.
+const myKeypairSigner = createSignerFromKeypair(umi, solanaKeypair);
+umi.use(signerIdentity(myKeypairSigner));
+
+// Creating PixCol collection
+const rawData = fs.readFileSync('coLsYhKiWt8PrdPx5gpZJw6hFH9PsoCWdXiEYMGm85h.json', 'utf-8');
+const jsonData = JSON.parse(rawData);
+
+const collectionKeypair = Keypair.fromSecretKey(Uint8Array.from(jsonData));
+console.log("collectionKeypair:", collectionKeypair);
 
 // Fonction pour créer l'arbre Merkle
 async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
@@ -61,9 +70,6 @@ async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
         console.log('Public Key:', solanaKeypair.publicKey.toString());
         console.log('Secret Key:', solanaKeypair.secretKey);
 
-        const myKeypairSigner = createSignerFromKeypair(umi, solanaKeypair);
-        umi.use(signerIdentity(myKeypairSigner));
-
         // Créer l'arbre Merkle
         const builder = await createTree(umi, {
             merkleTree: merkleTreeSigner,
@@ -72,7 +78,10 @@ async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
         });
 
         // Envoyer et confirmer la transaction
-        await builder.sendAndConfirm(umi);
+        const txRes = await builder.sendAndConfirm(umi);
+        console.log("txRes:", txRes);
+
+        console.log("builder: ", builder);
         console.log('Merkle Tree created successfully');
     } catch (error) {
         console.error('Error creating Merkle Tree:', error);
@@ -97,7 +106,6 @@ async function fetchTree(context: Pick<Context, 'rpc'>): Promise<void> {
     }
 }
 
-
 // Fonction pour Mint 1 NFT (sans collection associé)
 async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Promise<void> {
     console.log('Minting a cNFT...');
@@ -117,10 +125,10 @@ async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Pr
             leafOwner: leafOwner,
             merkleTree: merkleTreeSigner.publicKey,
             metadata: {
-              name: name, // Utiliser la chaîne construite
-              uri: 'https://example.com/my-cnft.json',
+              name: name, 
+              uri: 'ipfs://bafybeia3wuho4sfnks5vvd76qbbnnd5yqr2zoeiriskrlowzgjb5fqeuie/',
               sellerFeeBasisPoints: 500, // 5%
-              collection: null,
+              collection: collectionKeypair,
               creators: [
                 { address: umi.identity.publicKey, verified: false, share: 100 },
               ],
@@ -137,80 +145,112 @@ async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Pr
     }
 }
 
-/*
 // Fonction pour Mint
-async function mintCNFTcollection(context: Pick<Context, 'rpc'>): Promise<void> {
-    console.log('Minting a cNFT...');
+async function mintCNFTcollection(treeAddress: string, x: number, y: number): Promise<void> {
+    console.log('Minting a cNFT to a collection...');
     try {
-        const merkleTreeAccount = await fetchMerkleTree(umi, merkleTreeSigner.publicKey);
+
+        console.log("treeAddress:", treeAddress);
+        // Load the tree
         const treeConfig = await fetchTreeConfigFromSeeds(umi, {
-            merkleTree: merkleTreeSigner.publicKey,
+            merkleTree: publicKey(treeAddress),
         });
-        const canopyDepth = Math.log2(merkleTreeAccount.canopy.length + 2) - 1;
+        console.log("treeConfig.");
+
+        const merkleTreePublicKey = new PublicKey("7VYvSpAZY9TGeVA1FuBU7LpuUmLRJrKaq7kWwYPNsZtD");
+        const treeAccount = await fetchMerkleTree(umi, merkleTreePublicKey);
+        console.log("treeAccount.");
 
         const leafOwner =  solanaKeypair.publicKey;
-
-        const collectionMint = new PublicKey("CoLLvRE5Y9kzzz5dMzCw2eNWJz7HvLn9zWDiE8SAmsFe");
-
-        
-
-        // Chemin vers votre fichier JSON
-        const keypairFile = 'Co11aqX6XLa5WYm9UKnqUVEucsaHJ3puFmtYVTCvjrWX.json';
-
-        // Charger et parser le fichier JSON
-        const secretKey = Uint8Array.from(JSON.parse(fs.readFileSync(keypairFile, 'utf8')));
-
+        console.log("leafOwner.");
         // Créer une Keypair à partir de la clé secrète
-        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        //const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
 
+        console.log("bef", x, y);
+        const name = `PixSol X${x} Y${y}`;
+        console.log("treeConfig.publicKey", treeConfig.publicKey);
+        console.log("leafOwner", leafOwner);
+        console.log("treeAccount.publicKey", treeAccount.publicKey);
+        console.log("collectionKeypair.publicKey", collectionKeypair.publicKey);
 
-        //const collectionMint = generateSigner(umi);
+        // And a Collection NFT.
+        const collectionMint = generateSigner(umi);
 
-        await mintToCollectionV1(umi, {
-            leafOwner,
-            merkleTreeAccount,
-            merkleTreeSigner,
+        const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
+            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+          );
+
+        const txCreateNFT = await createNft(umi, {
+            mint: collectionMint,
+            name: 'PixSol Collection',
+            uri: 'ipfs://bafybeia3wuho4sfnks5vvd76qbbnnd5yqr2zoeiriskrlowzgjb5fqeuie/',
+            sellerFeeBasisPoints: percentAmount(5.5), // 5.5%
+            isCollection: true,
+        }).sendAndConfirm(umi);
+        console.log("txCreateNFT", txCreateNFT);
+        umi.programs.add(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID)
+
+        const tx = await mintToCollectionV1(umi, {
+            treeConfig: treeConfig.publicKey,
+            leafOwner: leafOwner,
+            merkleTree: treeAccount.publicKey,
+            collectionMint: collectionMint.publicKey,
             metadata: {
-              name: 'My Compressed NFT',
-              uri: 'https://example.com/my-cnft.json',
+              name: name,
+              symbol: 'PXS',
+              isMutable: false,
+              uri: 'ipfs://bafybeia3wuho4sfnks5vvd76qbbnnd5yqr2zoeiriskrlowzgjb5fqeuie/',
               sellerFeeBasisPoints: 500, // 5%
-              collection: { key: keypair, verified: false },
+              collection: { key: umi.identity.publicKey, verified: false },
               creators: [
                 { address: umi.identity.publicKey, verified: false, share: 100 },
               ],
             },
-          }).sendAndConfirm(umi)
-          
+        }).sendAndConfirm(umi)
+        console.log("tx:", tx);
 
-        console.log('Merkle Tree fetched successfully');
-        console.log('Tree Config:', treeConfig);
-        console.log('Canopy Depth:', canopyDepth);
+        console.log('Mint To Collection successfully.');
     } catch (error) {
         console.error('Error fetching Merkle Tree:', error);
     }
 }
-*/
+
 
 // Fonction principale
 async function main() {
     console.log('Main starts...');
 
-    const treeAdress = "6yVd8QWmbvYw5ugA4SrnSPbikFo8BirqGwE3L3i42eHE";
+    // TODO: Store the publicKey from the mint, into a file. Then load the file here.
+    const treeAddress = "7VYvSpAZY9TGeVA1FuBU7LpuUmLRJrKaq7kWwYPNsZtD";
+    const merkleTreePublicKey3 = new PublicKey(treeAddress);
 
-    const context = { rpc: umi.rpc };
-    await createMerkleTree(context);
-    await fetchTree(context);
+    // Display tree information
+    const treeConfig = await fetchTreeConfigFromSeeds(umi, {
+        merkleTree: publicKey(merkleTreePublicKey3),
+    });
+    console.log('Tree Config:', treeConfig);
+
+    const merkleTreeAccount = await fetchMerkleTree(umi, merkleTreePublicKey3);
+    console.log('Tree Account:', merkleTreeAccount);
+
+    //const context = { rpc: umi.rpc };
+    //await createMerkleTree(context);
+    //await fetchTree(treeAddress);
 
     const x1=50;
     const y1=50;
-    await mintCNFT(context, x1, y1);
+    await mintCNFTcollection(treeAddress, x1, y1);
 
     const x2=51;
     const y2=51;
-    await mintCNFT(context, x2, y2);
+    //await mintCNFTcollection(treeAddress, x2, y2);
 
-    //await fetchTree(context);
+    //await fetchTree(treeAddress);
     console.log('Main ends...');
 }
 
 main().catch(console.error);
+function loadWalletKey(arg0: string) {
+    throw new Error('Function not implemented.');
+}
+
