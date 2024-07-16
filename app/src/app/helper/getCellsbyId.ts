@@ -29,6 +29,6 @@ function dynamicInput({ id, x, y }: InputType): void {
 }
 
 
-dynamicInput({ id: 1000000 });
+dynamicInput({ id: 11343 });
 dynamicInput({ x: 1, y: 1000 }); 
 dynamicInput({ x: 1000, y: 1000 });

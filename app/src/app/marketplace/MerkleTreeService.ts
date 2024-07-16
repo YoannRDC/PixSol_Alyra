@@ -113,19 +113,19 @@ async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
             leafOwner: leafOwner,
             merkleTree: merkleTreeSigner.publicKey,
             metadata: {
-              name: 'PixSol X100 Y200', // TBD
-              uri: 'https://example.com/my-cnft.json',
-              sellerFeeBasisPoints: 500, // 5%
-              collection: null,
-              creators: [
-                { address: umi.identity.publicKey, verified: false, share: 100 },
-              ],
+                name: 'PixSol X100 Y200', // TBD
+                uri: 'https://example.com/my-cnft.json',
+                sellerFeeBasisPoints: 500, // 5%
+                collection: null,
+                creators: [
+                    { address: umi.identity.publicKey, verified: false, share: 100 },
+                ],
             },
-          }).sendAndConfirm(umi)
-          
+        }).sendAndConfirm(umi)
+        
 
-          
-          console.log('CNFT minted: %s', JSON.stringify({
+        
+        console.log('CNFT minted: %s', JSON.stringify({
             signature: Array.from(mintLog.signature),
             result: mintLog.result
         }));

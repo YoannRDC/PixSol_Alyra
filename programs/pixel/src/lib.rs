@@ -1,10 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount };
-// use mpl_token_metadata::{
-//     accounts::{Metadata as MetadataAccount},
-//     types::DataV2,
-// };
-use mpl_token_metadata::state::Metadata;
+use anchor_spl::token::{self, Token, TokenAccount};
+// use mpl_token_metadata::state::Metadata;
+
 // ☝️We have to check how access metadata of the pixel.
 // Check Method that we can find on Internet.
 // TODO: Create a variable to claim that the owner of the SC
@@ -34,9 +31,19 @@ pub mod vault {
     /// Deposit        ////
     ///////////////////////
     // Let see if we don't want to inpu the ids beginning, ids ends.
-    pub fn deposit(ctx: Context<Deposit>, amount: u64, x_beg: u32, y_beg: u32, x_end: u32, y_end: u32) -> Result<()> {
+    pub fn deposit(ctx: Context<Deposit>, amount: u64, nft_id_beg: u32, nft_id_end: u32) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
         let user = &ctx.accounts.user;
+
+        
+        let coordBeg = get_coordinates_from_id(nft_id_beg);
+        let x_beg: u32 = coordBeg.x;
+        let y_beg= coordBeg.y;
+
+        let coordEnd = get_coordinates_from_id(nft_id_end);
+        let x_end = coordEnd.x;
+        let y_end = coordEnd.y;
+        
 
         // Transfer tokens from user of the Board to vault
         token::transfer(
@@ -75,33 +82,32 @@ pub mod vault {
     ///////////////////////
 
 
-    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+    pub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
+        let user = &ctx.accounts.user;
 
-        // Access metadata of the NFT
-        // let nft_data = &ctx.accounts.nft_metadata;
-        let nft_metadata = Metadata::from_account_info(&ctx.accounts.nft_metadata)?;
+        let mut total_withdraw_amount = 0;
+        let collection_pubKey = Pubkey::new_from_array([0xdf, 0xab, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 
-        // Verify NFT ownership and collection
-        require!(
-            //We have to convert the PubKey of the collection into the array to have access to the withdraw function.
-            *nft_metadata.key == Pubkey::new_from_array([0xdf, 0xab, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
-            VaultError::InvalidNFTCollection
-        );
+        for nft_id in ctx.accounts.user_nfts.iter() {
 
-        // Get NFT counter value
-        let counter = nft_metadata.data.name.parse::<u64>().unwrap();
-        let last_withdraw = vault.last_withdraw_counter.get(&ctx.accounts.user.key()).unwrap_or(&0);
-        let withdraw_amount = counter.saturating_sub(*last_withdraw);
+            require!(
+                is_nft_from_collection(*nft_id, &collection_pubKey),
+                VaultError::InvalidNFTCollection
+            );
 
-        require!(withdraw_amount > 0, VaultError::NoWithdrawAvailable);
-        require!(amount <= withdraw_amount, VaultError::WithdrawAmountTooHigh);
-        require!(amount <= vault.total_balance, VaultError::InsufficientFunds);
+            let coordinates = get_coordinates_from_id(*nft_id);
+            let key = (coordinates.x, coordinates.y);
 
+            if let Some(count) = vault.matrix_counter.get_mut(&key) {
+                total_withdraw_amount += *count;
+                *count = 0; 
+            }
+        }
 
-        // TODO: COUNTING HOW MANY Pixels => Counters a Person possess to
-        //Truly transfer him what he earns
-        // Transfer tokens from vault to user
+        require!(total_withdraw_amount > 0, VaultError::NoWithdrawAvailable);
+        require!(total_withdraw_amount <= vault.total_balance, VaultError::InsufficientFunds);
+        
         token::transfer(
             CpiContext::new_with_signer(
                 ctx.accounts.token_program.to_account_info(),
@@ -112,13 +118,33 @@ pub mod vault {
                 },
                 &[&[b"vault", &[vault.bump]]],
             ),
-            amount,
+            total_withdraw_amount,
         )?;
 
-        vault.total_balance -= amount;
-        vault.last_withdraw_counter.insert(ctx.accounts.user.key(), counter);
+        vault.total_balance -= total_withdraw_amount;
+        // vault.last_withdraw_counter.insert(ctx.accounts.user.key(), counter);
         Ok(())
     }
+}
+
+#[derive(Clone, Copy)]
+struct Coordinates {
+    x: u32,
+    y: u32,
+}
+// Helper function to convert NFT ID to coordinates
+fn get_coordinates_from_id(id: u32) -> Coordinates {
+    let row = ((id - 1) / 1000) as u32;
+    let col = ((id - 1) % 1000) as u32;
+    let x = col + 1;
+    let y = row + 1;
+    Coordinates {x, y}
+}
+
+fn is_nft_from_collection(nft_id: u32, collection_pubkey: &Pubkey) -> bool {
+    // TODO: Assure that the logic helps with verifying that the NFT is actually from the 
+    // Actual Collection.
+    nft_id >= 1 && nft_id <= 1_000_001 && collection_pubkey == &Pubkey::new_from_array([0xdf, 0xab, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
 
 #[derive(Accounts)]
@@ -155,9 +181,7 @@ pub struct Withdraw<'info> {
     pub vault_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     /// CHECK: We're reading NFT metadata, which is safe
-    // #[account(owner = mpl_token_metadata::id())]
-    // pub nft_metadata: AccountInfo<'info>,
-    pub nft_metadata: AccountInfo<'info>,
+    pub user_nfts: Vec<u32>,
 }
 
 #[account]
