@@ -1,8 +1,10 @@
-export default function MarketplacePage() {
+import MintPageClient from './MintPageClient';
+
+export default function MintPage() {
   return (
-    <>
-      <h1 className="text-3xl font-bold mb-4">Marketplace Page</h1>
-      
-    </>
+    <div className="mint-page">
+      <h1 className="text-3xl font-bold mb-4">Mint cNFT</h1>
+      <MintPageClient />
+    </div>
   );
 }

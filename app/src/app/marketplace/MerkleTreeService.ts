@@ -21,12 +21,11 @@ const merkleTreePublicKey = merkleTreeKeypair.publicKey;
 
 console.log('Merkle Tree Public key:', merkleTreePublicKey.toString());
 
-// Charger les variables d'environnement à partir du fichier .env
-dotenv.config({ path: '../../../../.env' });
+
 //const solanaRpcHttpsMainnet = process.env.SOLANA_RPC_HTTPS_MAINNET as string;
-const solanaRpcHttpsMainnet = process.env.SOLANA_DEVNET as string;
+const solanaRpcHttpsMainnet = "https://api.devnet.solana.com";
 if (!solanaRpcHttpsMainnet) {
-    throw new Error('SOLANA_RPC_HTTPS_MAINNET is not defined in the .env file');
+  throw new Error('SOLANA_RPC_HTTPS_MAINNET is not defined in the .env file');
 }
 
 // Initialiser Umi avec l'URL RPC
@@ -51,7 +50,6 @@ const secretKeyArray = new Uint8Array(secretKey);
 // Créer le keypair avec la clé secrète
 const solanaKeypair = umi.eddsa.createKeypairFromSecretKey(secretKeyArray);
 
-console.log("solanaKeypair.publicKey:", solanaKeypair.publicKey);
 
 // Fonction pour créer l'arbre Merkle
 async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
@@ -69,6 +67,7 @@ async function createMerkleTree(context: Pick<Context, 'rpc'>): Promise<void> {
             merkleTree: merkleTreeSigner,
             maxDepth: 14,
             maxBufferSize: 64,
+            public: true,
         });
 
         // Envoyer et confirmer la transaction
@@ -99,7 +98,7 @@ async function fetchTree(context: Pick<Context, 'rpc'>): Promise<void> {
 
 
 // Fonction pour Mint 1 NFT (sans collection associé)
-async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Promise<void> {
+async function mintCNFT(context: Pick<Context, 'rpc'>): Promise<void> {
     console.log('Minting a cNFT...');
     try {
         const merkleTreeAccount = await fetchMerkleTree(umi, merkleTreeSigner.publicKey);
@@ -108,16 +107,13 @@ async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Pr
         });
         const canopyDepth = Math.log2(merkleTreeAccount.canopy.length + 2) - 1;
 
-        const leafOwner =  solanaKeypair.publicKey;
-
-        // Construire X100 et Y200 à partir des paramètres passés
-        const name = `PixSol X${x} Y${y}`;
+        const leafOwner =  umi.identity.publicKey;
 
         const mintLog = await mintV1(umi, {
             leafOwner: leafOwner,
             merkleTree: merkleTreeSigner.publicKey,
             metadata: {
-              name: name, // Utiliser la chaîne construite
+              name: 'PixSol X100 Y200', // TBD
               uri: 'https://example.com/my-cnft.json',
               sellerFeeBasisPoints: 500, // 5%
               collection: null,
@@ -126,6 +122,8 @@ async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Pr
               ],
             },
           }).sendAndConfirm(umi)
+          
+
           
           console.log('CNFT minted: %s', JSON.stringify({
             signature: Array.from(mintLog.signature),
@@ -136,7 +134,6 @@ async function mintCNFT(context: Pick<Context, 'rpc'>, x: number, y: number): Pr
         console.error('Error fetching Merkle Tree:', error);
     }
 }
-
 /*
 // Fonction pour Mint
 async function mintCNFTcollection(context: Pick<Context, 'rpc'>): Promise<void> {
@@ -194,22 +191,11 @@ async function mintCNFTcollection(context: Pick<Context, 'rpc'>): Promise<void> 
 // Fonction principale
 async function main() {
     console.log('Main starts...');
-
-    const treeAdress = "6yVd8QWmbvYw5ugA4SrnSPbikFo8BirqGwE3L3i42eHE";
-
     const context = { rpc: umi.rpc };
     await createMerkleTree(context);
     await fetchTree(context);
-
-    const x1=50;
-    const y1=50;
-    await mintCNFT(context, x1, y1);
-
-    const x2=51;
-    const y2=51;
-    await mintCNFT(context, x2, y2);
-
-    //await fetchTree(context);
+    await mintCNFT(context);
+    await fetchTree(context);
     console.log('Main ends...');
 }
 
