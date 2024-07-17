@@ -39,7 +39,7 @@ class NFTCollection {
 
 module.exports = NFTCollection;
 
-// In your test file
+// In test file
 /**
 describe('NFT Collection Tests', () => {
     let collection: NFTCollection;
