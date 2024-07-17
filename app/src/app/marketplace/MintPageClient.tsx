@@ -7,6 +7,7 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { 
   fetchMerkleTree,
   mintV1, 
+  mintToCollectionV1,
   mplBubblegum,
   fetchTreeConfigFromSeeds
 } from "@metaplex-foundation/mpl-bubblegum";
@@ -43,46 +44,46 @@ export default function MintPageClient() {
       setError('Please connect your wallet first.');
       return;
     }
-
+  
     setLoading(true);
     setError(null);
     setAssetId(null);
-
+  
     try {
       const merkleTreePublicKey = new PublicKey("7VYvSpAZY9TGeVA1FuBU7LpuUmLRJrKaq7kWwYPNsZtD");
-
+      const collectionMint = new PublicKey("67mR6RmCWiybDFfBNv5vkKofnGuxpRRZusLNGsn4biiL");
       const treeConfig = await fetchTreeConfigFromSeeds(umi, {
         merkleTree: publicKey(merkleTreePublicKey),
       });
-
+  
       console.log('Tree Config:', treeConfig);
-
-      
-
+  
       const tx = transactionBuilder()
-        .add(mintV1(umi, {
+        .add(mintToCollectionV1(umi, {
           leafOwner: publicKey(wallet.publicKey.toString()),
           merkleTree: publicKey(merkleTreePublicKey),
+          collectionMint: publicKey(collectionMint),
+          collectionAuthority: umi.identity, // This is now using the signer
           metadata: {
-            name: 'PixSol X100 Y200',
+            name: 'PixSol $$$',
             uri: 'https://example.com/my-cnft.json',
             sellerFeeBasisPoints: 500,
-            collection: null,
+            collection: { key: collectionMint, verified: false },
             creators: [
               { address: umi.identity.publicKey, verified: false, share: 100 },
             ],
           },
         }));
-
+  
       const result = await tx.sendAndConfirm(umi, {
         confirm: { commitment: 'processed' },
       });
-
+  
       console.log('CNFT minted:', JSON.stringify({
         signature: result.signature,
         result: result
       }));
-
+  
       setAssetId(result.signature.toString());
     } catch (err) {
       setError('An error occurred during the minting process: ' + (err as Error).message);

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { createSignerFromKeypair, generateSigner, signerIdentity, type Context } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { createTree, fetchMerkleTree, fetchTreeConfigFromSeeds, mintToCollectionV1, mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
+import { createTree, fetchMerkleTree, fetchTreeConfigFromSeeds, mintToCollectionV1, mintV1, mplBubblegum,  } from '@metaplex-foundation/mpl-bubblegum';
 
 const solanaWeb3 = require('@solana/web3.js');
 const { MerkleTree } = require('merkletreejs');

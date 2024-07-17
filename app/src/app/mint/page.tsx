@@ -27,12 +27,9 @@ export default function MintPage() {
 
       console.log('Preload...');
       
-      const fs = require('fs');
-      const path = require('path');
-      const os = require('os');
 
-      // Charger les variables d'environnement à partir du fichier .env
-      dotenv.config({ path: '../../../../.env' });
+
+
       //const solanaRpcHttpsMainnet = process.env.SOLANA_RPC_HTTPS_MAINNET as string;
       const solanaRpcHttpsMainnet = process.env.SOLANA_DEVNET as string;
       if (!solanaRpcHttpsMainnet) {
