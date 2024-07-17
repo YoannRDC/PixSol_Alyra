@@ -129,7 +129,7 @@ async function createCollection(
     },
     {
       createMasterEditionArgs: {
-        maxSupply: 10000,
+        maxSupply: 0,
       },
     }
   );
@@ -207,13 +207,13 @@ async function mintToCollection(merkleTreePublicKey: PublicKey): Promise<void> {
       const mintLog = await mintToCollectionV1(umi, {
           leafOwner: publicKey("M88kr8ntGbL6heuAYRXf4DULABTahMgEjje1sBkhFGD"),
           merkleTree: publicKey(merkleTreePublicKey),
-          collectionMint: publicKey("9TSwr3ZFE7HMUQLGKucu55hdDfJxhMdzYi92WiiGe3s8"),
+          collectionMint: publicKey("4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp"),
           collectionAuthority: umi.identity,
           metadata: {
-              name: '1',
-              uri: 'https://example.com/my-cnft.json',
+              name: '3',
+              uri: 'https://img.freepik.com/premium-photo/pixel-style-cartoon-front-view-cryptocurrency-sol-solana-black-coin-cartoon-style_477250-321.jpg',
               sellerFeeBasisPoints: 500, // 5%
-              collection: { key: publicKey("9TSwr3ZFE7HMUQLGKucu55hdDfJxhMdzYi92WiiGe3s8"), verified: false },
+              collection: { key: publicKey("4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp"), verified: true },
               creators: [
                   { address: umi.identity.publicKey, verified: false, share: 100 },
               ],
@@ -258,8 +258,8 @@ async function main() {
         // 
         // CREATION DE LA COLLECTION A FAIRE UNE FOIS
         //
-        const collectionDetails = await createCollection(connection, solanaKeypair, metadata);
-        console.log('Collection created:', collectionDetails);
+       //const collectionDetails = await createCollection(connection, solanaKeypair, metadata);
+        //console.log('Collection created:', collectionDetails);
 
         // Create Merkle Tree
          // CREATION DE LA COLLECTION A FAIRE UNE FOIS
@@ -270,14 +270,14 @@ async function main() {
 
         // Fetch Merkle Tree
         console.log('Fetching Merkle Tree...');
-        //await fetchTree(new PublicKey("3Di4XyyLySkDXW2TtV9EzwpxBfLQUfhkmej7mJ64E4FA"));
+        //await fetchTree(new PublicKey("4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc"));
 
         // Mint cNFT
         console.log('Minting cNFT...');
         //await mintCNFT(new PublicKey("3Di4XyyLySkDXW2TtV9EzwpxBfLQUfhkmej7mJ64E4FA"));;
-          //await mintToCollection(new PublicKey("3Di4XyyLySkDXW2TtV9EzwpxBfLQUfhkmej7mJ64E4FA"));
+       // await mintToCollection(new PublicKey("4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc"));
         // Fetch Merkle Tree again to see changes
-        console.log('Fetching Merkle Tree after minting...');
+        //console.log('Fetching Merkle Tree after minting...');
         //await fetchTree(new PublicKey("3Di4XyyLySkDXW2TtV9EzwpxBfLQUfhkmej7mJ64E4FA"));
 
         console.log('Main ends...');
