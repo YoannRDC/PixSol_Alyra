@@ -12,6 +12,7 @@ use anchor_spl::token::{self, Token, TokenAccount};
 declare_id!("");
 
 const DEPOSIT_AMOUNT_PER_PIXEL: u64 = 900000;
+const WITHDRAW_AMOUT_PER_PIXEL: u64 = DEPOSIT_AMOUNT_PER_PIXEL /2;
 #[program]
 pub mod vault {
     use super::*;

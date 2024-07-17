@@ -8,7 +8,7 @@ interface NFT {
 class NFTCollection {
     private nfts: NFT[] = [];
 
-    constructor(size: number = 1000) {
+    constructor(size: number = 10000) {
         this.generateCollection(size);
     }
 
@@ -38,17 +38,6 @@ class NFTCollection {
 }
 
 module.exports = NFTCollection;
-
-  // Usage:
-const pixelCollection = new NFTCollection();
-
-// Get a specific NFT
-const nft42 = pixelCollection.getNFTById(42);
-console.log(nft42);
-
-// Get a random NFT
-const randomNFT = pixelCollection.getRandomNFT();
-console.log(randomNFT);
 
 // In your test file
 /**
