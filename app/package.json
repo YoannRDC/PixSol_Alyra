@@ -22,6 +22,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.0",
+    "base58-js": "^2.0.0",
     "ioredis": "^5.4.1",
     "next": "14.2.4",
     "pino-pretty": "^11.2.1",
