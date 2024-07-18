@@ -25,7 +25,8 @@ pub mod governance {
                 to: ctx.accounts.token_account.to_account_info(),
                 authority: ctx.accounts.mint_authority.to_account_info(),
             };
-            let cpi_context = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
+            let cpi_context =
+                CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
             token::mint_to(cpi_context, 1)?;
         }
         Ok(())
@@ -50,6 +51,21 @@ pub mod governance {
         emit!(MintedPixelResult { x, y, is_minted });
 
         Ok(())
+    }
+
+    pub fn is_minted_pixel_v2(
+        ctx: Context<IsMintedPixel>,
+        x: u16,
+        y: u16,
+    ) -> Result<MintedPixelResult> {
+        let pixel_board = &ctx.accounts.pixel_board;
+        let pixel_to_check = Pixel { x, y };
+        let is_minted = pixel_board
+            .minted_pixels
+            .iter()
+            .any(|pixel| *pixel == pixel_to_check);
+
+        Ok(MintedPixelResult { x, y, is_minted })
     }
 }
 
@@ -98,8 +114,3 @@ pub struct MintedPixelResult {
     pub y: u16,
     pub is_minted: bool,
 }
-
-
-// NOTE: Help to mint: 
-// https://crates.io/crates/mpl-bubblegum
-// https://medium.com/@KishiTheMechanic/tips-for-minting-multiple-compressed-nfts-cnfts-simultaneously-on-solana-4e01e06bae00

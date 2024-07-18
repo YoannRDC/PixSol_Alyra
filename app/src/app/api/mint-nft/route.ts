@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
 import { createSignerFromKeypair, signerIdentity, publicKey } from '@metaplex-foundation/umi';
-import { mintToCollectionV1 } from '@metaplex-foundation/mpl-bubblegum';
+import { mintToCollectionV1, } from '@metaplex-foundation/mpl-bubblegum';
 import fs from 'fs';
 import path from 'path';
-
+import { base58 } from '@metaplex-foundation/umi/serializers';
 
 // Environment variables
 const SOLANA_RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL as string;
@@ -76,8 +76,8 @@ export async function POST(req: Request) {
 
     // If we reach this point, the minting was successful
     incrementMintCount(nextMintCount);
-
-    return NextResponse.json({ message: 'NFT minted successfully', signature: mintResult.signature, mintNumber: nextMintCount }, { status: 200 });
+    const signatureSerialze = base58.deserialize(mintResult.signature);
+    return NextResponse.json({ message: 'NFT minted successfully', signature: signatureSerialze, mintNumber: nextMintCount }, { status: 200 });
   } catch (error) {
     console.error('Minting error:', error);
     return NextResponse.json({ error: 'Failed to mint NFT' }, { status: 500 });
