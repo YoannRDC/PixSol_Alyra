@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { 
   fetchMerkleTree,
@@ -27,11 +27,11 @@ export default function WithdrawPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [assetId, setAssetId] = useState<string | null>(null);
   const wallet = useWallet();
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [umi, setUmi] = useState<any>(null);
   const anchorWallet = useAnchorWallet(); 
   const [log, setLog] = useState<string | null>(null);
   const [eventLog, setEventLog] = useState<string | null>(null);
-  
   const { connection } = useConnection();
 
   useEffect(() => {
@@ -136,6 +136,41 @@ export default function WithdrawPageClient() {
     }
   };
 
+  // ******
+  // Send sol.
+  // ******
+
+  const handleSend = async () => {
+    if (!wallet.connected || !wallet.publicKey || !walletAddress) {
+      setError('Please connect your wallet and enter a valid wallet address.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: new PublicKey(walletAddress),
+          lamports: 0.01 * 1e9 // 0.01 SOL in lamports
+        })
+      );
+
+      const signature = await wallet.sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      console.log('Transaction successful with signature:', signature);
+      setLog(`Transaction successful with signature: ${signature}`);
+    } catch (err) {
+      setError('An error occurred during the send process: ' + (err as Error).message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <button
@@ -149,6 +184,23 @@ export default function WithdrawPageClient() {
       {assetId && <p className="text-green-500 mt-4">Asset ID: {assetId}</p>}
       <pre>{log}</pre>
       <pre>{eventLog}</pre>
+      
+      <div className="mt-4">
+        <input
+          type="text"
+          placeholder="Wallet Address"
+          value={walletAddress}
+          onChange={(e) => setWalletAddress(e.target.value)}
+          className="px-4 py-2 border rounded mr-2"
+        />
+        <button
+          onClick={handleSend}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+          disabled={loading || !wallet.connected}
+        >
+          {loading ? 'Sending...' : 'Send 0.01 SOL'}
+        </button>
+      </div>
     </div>
   );
 }
