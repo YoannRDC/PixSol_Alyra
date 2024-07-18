@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { 
@@ -18,13 +18,21 @@ import {
   generateSigner 
 } from '@metaplex-foundation/umi';
 import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
+import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from "@project-serum/anchor";
+import { confirmTx } from '../utils/helper';
 
-export default function MintPageClient() {
+export default function WithdrawPageClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [assetId, setAssetId] = useState<string | null>(null);
   const wallet = useWallet();
   const [umi, setUmi] = useState<any>(null);
+  const anchorWallet = useAnchorWallet(); 
+  const [log, setLog] = useState<string | null>(null);
+  const [eventLog, setEventLog] = useState<string | null>(null);
+  
+  const { connection } = useConnection();
 
   useEffect(() => {
     if (wallet.connected && wallet.publicKey) {
@@ -38,7 +46,7 @@ export default function MintPageClient() {
     }
   }, [wallet.connected, wallet.publicKey]);
 
-  const handleMint = async () => {
+  const handleWithdraw = async () => {
     if (!wallet.connected || !wallet.publicKey || !umi) {
       setError('Please connect your wallet first.');
       return;
@@ -49,43 +57,79 @@ export default function MintPageClient() {
     setAssetId(null);
 
     try {
-      const merkleTreePublicKey = new PublicKey("7VYvSpAZY9TGeVA1FuBU7LpuUmLRJrKaq7kWwYPNsZtD");
+      console.log('Calling withdraw...');
 
-      const treeConfig = await fetchTreeConfigFromSeeds(umi, {
-        merkleTree: publicKey(merkleTreePublicKey),
-      });
+      // ******
+      // PREPARE TRANSACTIONS
+      // ******
 
-      console.log('Tree Config:', treeConfig);
-
+      // See: declare_id!("6o6i8WPQLGoc78qvrLLU1sHTPvjg7eDztfgP26cfUrWZ");
+      const pixsol_governance_program = "6o6i8WPQLGoc78qvrLLU1sHTPvjg7eDztfgP26cfUrWZ";
+      const PROGRAM_ID = new PublicKey(pixsol_governance_program);
       
+      const response = await fetch('/idl.json');
+      const idl = await response.json();
 
-      const tx = transactionBuilder()
-        .add(mintV1(umi, {
-          leafOwner: publicKey(wallet.publicKey.toString()),
-          merkleTree: publicKey(merkleTreePublicKey),
-          metadata: {
-            name: 'PixSol X100 Y200',
-            uri: 'https://example.com/my-cnft.json',
-            sellerFeeBasisPoints: 500,
-            collection: null,
-            creators: [
-              { address: umi.identity.publicKey, verified: false, share: 100 },
-            ],
-          },
-        }));
+      if (anchorWallet) {
+        const provider = new AnchorProvider(connection, anchorWallet, {
+          commitment: "confirmed",
+        });
+        const program = new Program(idl, PROGRAM_ID, provider);
+          
+        // ******
+        // READ Account.
+        // ******
+        const pixel_board_account = await program.account.pixelBoard.all();
+        console.log("pixel_board_account:", pixel_board_account);
+        
+        setLog(JSON.stringify(pixel_board_account, null, 2));
 
-      const result = await tx.sendAndConfirm(umi, {
-        confirm: { commitment: 'processed' },
-      });
+        // Call: pub fn is_minted_pixel(ctx: Context<IsMintedPixel>, x: u16, y: u16)
+        const x = 100; 
+        const y = 200; 
 
-      console.log('CNFT minted:', JSON.stringify({
-        signature: result.signature,
-        result: result
-      }));
+        const pixel_Boad_address = "BXtrMtGrghWzhkwwPwnS9A22VvVgna7X6xBEmgx2C8LZ";
+        const pixelBoardPublicKey = publicKey(pixel_Boad_address);
 
-      setAssetId(result.signature.toString());
+        console.log("pixelBoardPublicKey:", pixelBoardPublicKey);
+
+        // ******
+        // CALL function.
+        // ******
+
+        // To fetch event data (if the instruction emits an event)
+        const txSignature_no_return = await program.methods
+          .isMintedPixel(x, y)
+          .accounts({
+            pixelBoard: pixelBoardPublicKey,
+          }).rpc();
+
+        console.log("txSignature_no_return:", txSignature_no_return);
+
+        
+        // ******
+        // CALL function with answer
+        // ******
+
+        // To fetch event data (if the instruction emits an event)
+        const result = await program.methods
+        .isMintedPixelV2(x, y)
+        .accounts({
+          pixelBoard: pixelBoardPublicKey,
+        }).rpc();
+
+        console.log("result:", result);
+        setEventLog(JSON.stringify(result, null, 2));
+
+        // ******
+        // CATCH Event.
+        // ******
+
+
+      }
+
     } catch (err) {
-      setError('An error occurred during the minting process: ' + (err as Error).message);
+      setError('An error occurred during the withdraw process: ' + (err as Error).message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -95,14 +139,16 @@ export default function MintPageClient() {
   return (
     <div>
       <button
-        onClick={handleMint}
+        onClick={handleWithdraw}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
         disabled={loading || !wallet.connected}
       >
-        {loading ? 'Minting...' : 'Mint cNFT'}
+        {loading ? 'Withdrawing...' : 'Withdraw'}
       </button>
       {error && <p className="text-red-500 mt-4">{error}</p>}
       {assetId && <p className="text-green-500 mt-4">Asset ID: {assetId}</p>}
+      <pre>{log}</pre>
+      <pre>{eventLog}</pre>
     </div>
   );
 }
