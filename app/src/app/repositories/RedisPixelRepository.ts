@@ -6,7 +6,7 @@ export class RedisPixelRepository implements PixelRepository {
   private redis: Redis;
 
   constructor() {
-    this.redis = new Redis(process.env.REDIS_URL);
+    this.redis = new Redis(process.env.REDIS_URL as string);
   }
 
   async savePixel(pixel: PixelData): Promise<void> {
@@ -30,7 +30,7 @@ export class RedisPixelRepository implements PixelRepository {
     keys.forEach(key => pipeline.hgetall(key));
     const results = await pipeline.exec();
 
-    return results.map((result, index) => ({
+    return results!.map((result , index) => ({
       address: keys[index].split(':')[1],
       color: result[1].color,
       owner: result[1].owner,

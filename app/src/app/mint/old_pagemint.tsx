@@ -1,4 +1,4 @@
-'use client'
+/*'use client'
 import { useState } from 'react';
 import dotenv from 'dotenv';
 import {
@@ -110,3 +110,4 @@ function loadWalletKey(arg0: string) {
   throw new Error('Function not implemented.');
 }
 
+*/
