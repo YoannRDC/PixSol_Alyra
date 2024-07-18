@@ -49,6 +49,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({ onSelectionChange, pixelData, b
       height: `${100 / boardSize}%`,
       border: '1px solid #ccc',
       boxSizing: 'border-box',
+      
     }
 
     if (pixelData[key]) {
@@ -99,7 +100,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({ onSelectionChange, pixelData, b
         width: '100%',
         aspectRatio: '1 / 1',
       }}
-    >
+    > 
       {Array.from({ length: boardSize * boardSize }, (_, index) => {
         const x = index % boardSize
         const y = Math.floor(index / boardSize)

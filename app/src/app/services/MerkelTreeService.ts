@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+/*import dotenv from 'dotenv';
 import { createSignerFromKeypair, generateSigner, none, percentAmount, publicKey, signerIdentity, Umi, type Context } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { createTree, fetchMerkleTree, fetchTreeConfigFromSeeds, mintToCollectionV1, mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
@@ -253,4 +253,5 @@ main().catch(console.error);
 function loadWalletKey(arg0: string) {
     throw new Error('Function not implemented.');
 }
-
+    
+*/

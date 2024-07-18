@@ -1,112 +1,59 @@
 'use client'
 import { useState } from 'react';
-import dotenv from 'dotenv';
-import {
-  fetchMerkleTree,
-  findLeafAssetIdPda,
-  mintV1,
-  mplBubblegum,
-  parseLeafFromMintV1Transaction
-} from "@metaplex-foundation/mpl-bubblegum";
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { PublicKey } from '@solana/web3.js';
-import path from 'path';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function MintPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [assetId, setAssetId] = useState<string | null>(null);
+  const { publicKey, connected } = useWallet();
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintResult, setMintResult] = useState<string | null>(null);
 
   const handleMint = async () => {
-    setLoading(true);
-    setError(null);
-    setAssetId(null);
+    if (!publicKey) return;
+
+    setIsMinting(true);
+    setMintResult(null);
 
     try {
-
-      console.log('Preload...');
-      
-      const fs = require('fs');
-      const path = require('path');
-      const os = require('os');
-
-      // Charger les variables d'environnement à partir du fichier .env
-      dotenv.config({ path: '../../../../.env' });
-      //const solanaRpcHttpsMainnet = process.env.SOLANA_RPC_HTTPS_MAINNET as string;
-      const solanaRpcHttpsMainnet = process.env.SOLANA_DEVNET as string;
-      if (!solanaRpcHttpsMainnet) {
-        throw new Error('SOLANA_RPC_HTTPS_MAINNET is not defined in the .env file');
-      }
-      const umi = createUmi(solanaRpcHttpsMainnet).use(mplBubblegum());
-
-      // Chemin par défaut de la clé secrète Solana
-      const keyFilePath = path.join(os.homedir(), '.config', 'solana', 'id.json');
-      const secretKey = JSON.parse(fs.readFileSync(keyFilePath, 'utf8'));
-      const secretKeyArray = new Uint8Array(secretKey);
-
-      // Créer le keypair avec la clé secrète
-      const solanaKeypair = umi.eddsa.createKeypairFromSecretKey(secretKeyArray);
-
-      console.log('Public Key:', solanaKeypair.publicKey.toString());
-      console.log('Secret Key:', solanaKeypair.secretKey);
-
-      // Define leaf parameters.
-      const leafOwner = solanaKeypair.publicKey;
-      // const merkleTree =  new PublicKey("AENzNGdj8EbFCSE3Cfooqqn9TJUyVKzKrMXwsD9hbfj7");
-      //const merkleTree =  new PublicKey("6yVd8QWmbvYw5ugA4SrnSPbikFo8BirqGwE3L3i42eHE");
-
-      const merkleTree = loadWalletKey("6yVd8QWmbvYw5ugA4SrnSPbikFo8BirqGwE3L3i42eHE.json").publicKey;
-
-      //const merkleTreeAccount = await fetchMerkleTree(umi, merkleTree.publicKey);
-
-      //const merkleTree = generateSigner(umi);
-
-      //const merkleTreeAccount = await fetchMerkleTree(umi, merkleTree.publicKey);
-
-      await mintV1(umi, {
-        leafOwner,
-        merkleTree,
-        metadata: {
-          name: 'PixSol X100 Y200', // TBD
-          uri: 'https://example.com/my-cnft.json',
-          sellerFeeBasisPoints: 500, // 5%
-          collection: null,
-          creators: [
-            { address: umi.identity.publicKey, verified: false, share: 100 },
-          ],
+      const response = await fetch('/api/mint-nft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      }).sendAndConfirm(umi)
+        body: JSON.stringify({ userPublicKey: publicKey.toString() }),
+      });
 
-    } catch (err) {
-      setError('An error occurred during the minting process.');
-      console.error(err);
+      if (!response.ok) {
+        throw new Error('Minting failed');
+      }
+
+      const data = await response.json();
+      setMintResult(`NFT minted successfully! Signature: ${data.signature}`);
+    } catch (error) {
+      console.error('Minting error:', error);
+      setMintResult('Minting failed. Please try again.');
     } finally {
-      setLoading(false);
+      setIsMinting(false);
     }
-      
   };
 
   return (
-    <>
-      <h1 className="text-3xl font-bold mb-4">Mint Page</h1>
-      <button
-        onClick={handleMint}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-        disabled={loading}
-      >
-        {loading ? 'Minting...' : 'Mint'}
-      </button>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-      {assetId && <p className="text-green-500 mt-4">Asset ID: {assetId}</p>}
-    </>
+    <div>
+      <h1>Mint Your NFT</h1>
+      {!connected ? (
+        <p>Please connect your wallet to mint.</p>
+      ) : (
+        <div>
+          <p>Connected: {publicKey?.toBase58()}</p>
+          <button 
+            onClick={handleMint} 
+            disabled={isMinting}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            {isMinting ? 'Minting...' : 'Mint NFT'}
+          </button>
+        </div>
+      )}
+      {mintResult && <p>{mintResult}</p>}
+    </div>
   );
 }
-function createAndMint() {
-  throw new Error('Function not implemented.');
-}
-
-function loadWalletKey(arg0: string) {
-  throw new Error('Function not implemented.');
-}
-

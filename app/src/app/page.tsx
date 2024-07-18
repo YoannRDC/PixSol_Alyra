@@ -22,7 +22,7 @@ export default function Home() {
       try {
         const response = await fetch('/api/pixels');
         const pixels = await response.json();
-        const newPixelData = pixels.reduce((acc, pixel) => {
+        const newPixelData = pixels.reduce((acc: { [key: string]: { color: string, owner: string } }, pixel: any) => {
           acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
           return acc;
         }, {} as { [key: string]: { color: string, owner: string } });
@@ -135,7 +135,7 @@ export default function Home() {
           // Refresh pixel data after purchase
           const refreshResponse = await fetch('/api/pixels');
           const refreshedPixels = await refreshResponse.json();
-          const newPixelData = refreshedPixels.reduce((acc, pixel) => {
+          const newPixelData = refreshedPixels.reduce((acc: { [key: string]: { color: string, owner: string } }, pixel: any) => {
             acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
             return acc;
           }, {} as { [key: string]: { color: string, owner: string } });
@@ -161,6 +161,7 @@ export default function Home() {
             pixelData={pixelData} 
             boardSize={BOARD_SIZE}
             isLoading={isLoading}
+            {...({} as any)}
           />
         </div>
         <div className={styles.infoBoard}>
@@ -170,6 +171,7 @@ export default function Home() {
             onImageUpload={handleImageUpload}
             onBuy={handleBuy}
             isLoading={isLoading}
+            {...({} as any)}
             isConnected={!!publicKey}
           />
         </div>
