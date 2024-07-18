@@ -14,6 +14,7 @@ const Header: React.FC = () => {
                 <Link href="/" className="mr-4 text-white hover:text-blue-300">Home</Link>
                 <Link href="/mint" className="mr-4 text-white hover:text-blue-300">Mint Page</Link>
                 <Link href="/marketplace" className="mr-4 text-white hover:text-blue-300">Marketplace Page</Link>
+                <Link href="/withdraw" className="mr-4 text-white hover:text-blue-300">Withdraw Page</Link>
             </nav>
             <ClientWalletMultiButton />
         </div>
