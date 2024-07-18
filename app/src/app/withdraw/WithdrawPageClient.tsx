@@ -26,12 +26,15 @@ export default function WithdrawPageClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [assetId, setAssetId] = useState<string | null>(null);
+  const [vaultAddress, setVaultAddress] = useState<string>('');
+  const [xValue, setXValue] = useState<number>(1);
+  const [yValue, setYValue] = useState<number>(1);
   const wallet = useWallet();
-  const [walletAddress, setWalletAddress] = useState<string>('');
   const [umi, setUmi] = useState<any>(null);
   const anchorWallet = useAnchorWallet(); 
   const [log, setLog] = useState<string | null>(null);
   const [eventLog, setEventLog] = useState<string | null>(null);
+  
   const { connection } = useConnection();
 
   useEffect(() => {
@@ -136,13 +139,9 @@ export default function WithdrawPageClient() {
     }
   };
 
-  // ******
-  // Send sol.
-  // ******
-
   const handleSend = async () => {
-    if (!wallet.connected || !wallet.publicKey || !walletAddress) {
-      setError('Please connect your wallet and enter a valid wallet address.');
+    if (!wallet.connected || !wallet.publicKey || !vaultAddress) {
+      setError('Please connect your wallet and enter a valid vault address.');
       return;
     }
 
@@ -153,7 +152,7 @@ export default function WithdrawPageClient() {
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: wallet.publicKey,
-          toPubkey: new PublicKey(walletAddress),
+          toPubkey: new PublicKey(vaultAddress),
           lamports: 0.01 * 1e9 // 0.01 SOL in lamports
         })
       );
@@ -188,17 +187,35 @@ export default function WithdrawPageClient() {
       <div className="mt-4">
         <input
           type="text"
-          placeholder="Wallet Address"
-          value={walletAddress}
-          onChange={(e) => setWalletAddress(e.target.value)}
+          placeholder="Vault Address"
+          value={vaultAddress}
+          onChange={(e) => setVaultAddress(e.target.value)}
           className="px-4 py-2 border rounded mr-2"
+        />
+        <input
+          type="number"
+          placeholder="X"
+          value={xValue}
+          onChange={(e) => setXValue(Math.max(1, Math.min(100, Number(e.target.value))))}
+          className="px-4 py-2 border rounded mr-2"
+          min="1"
+          max="100"
+        />
+        <input
+          type="number"
+          placeholder="Y"
+          value={yValue}
+          onChange={(e) => setYValue(Math.max(1, Math.min(100, Number(e.target.value))))}
+          className="px-4 py-2 border rounded mr-2"
+          min="1"
+          max="100"
         />
         <button
           onClick={handleSend}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
           disabled={loading || !wallet.connected}
         >
-          {loading ? 'Sending...' : 'Send 0.01 SOL'}
+          {loading ? 'Sending...' : 'Change Pixel Color (0.01 SOL)'}
         </button>
       </div>
     </div>
