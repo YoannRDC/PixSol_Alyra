@@ -35,6 +35,7 @@ export default function Home() {
   const wallet = useWallet();
   const [umi, setUmi] = useState<any>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [shouldMint, setShouldMint] = useState(false);
 
   useEffect(() => {
     if (wallet.connected && wallet.publicKey) {
@@ -68,6 +69,13 @@ export default function Home() {
     loadPixelData();
   }, []);
 
+  useEffect(() => {
+    if (shouldMint && imageUrl) {
+      handleMint();
+      setShouldMint(false);  // Reset this after minting
+    }
+  }, [shouldMint, imageUrl]);
+
   const handleSavePixelBoard = async () => {
     try {
       const blob = await pixelDataToPNG(pixelData, BOARD_SIZE);
@@ -80,11 +88,11 @@ export default function Home() {
       });
   
       if (response.ok) {
-        const data = await response.json();  // Parse the JSON response to get the data object
-        const imageUrl = data.url;          // Extract the URL from the data object
+        const data = await response.json();
+        const imageUrl = data.url;
         console.log('Pixel board image saved successfully:', imageUrl);
-        setImageUrl(imageUrl);              // Assuming setImageUrl is a state setter for storing the image URL
-        handleMint();                       // Proceed to minting with the new image URL
+        setImageUrl(imageUrl);
+        setShouldMint(true);  // Set this to true to trigger minting
       } else {
         console.error('Failed to save pixel board image');
         alert('Failed to save pixel board. Please try again.');
@@ -133,7 +141,6 @@ export default function Home() {
         confirm: { commitment: 'processed' },
       });
 
-      
       const signatureSerialze = base58.deserialize(result.signature);
       setAssetId(signatureSerialze.toString());
     } catch (err) {
@@ -157,13 +164,13 @@ export default function Home() {
       {imageUrl ? (
         <CldImage
         alt="pixsol before mint"
-          src={imageUrl}  // Assuming `imageUrl` holds the public ID needed by Cloudinary
+          src={imageUrl}
           width="500"
           height="500"
-          crop="fill"  // Setting crop mode to 'fill' to maintain the aspect ratio while filling the given dimension
+          crop="fill"
         />
       ) : (
-        <p>No image to display, please save board first</p>  // Display alternative content or nothing if there's no image
+        <p>No image to display, please save board first</p>
       )}
       {error && <p className={styles.error}>{error}</p>}
       {assetId && <p className={styles.success}>Transaction ID: {assetId}</p>}
