@@ -32,8 +32,8 @@ export class RedisPixelRepository implements PixelRepository {
 
     return results!.map((result , index) => ({
       address: keys[index].split(':')[1],
-      color: result[1].color,
-      owner: result[1].owner,
+      color: (result[1] as any).color,
+      owner: (result[1] as any).owner,
     }));
   }
 
