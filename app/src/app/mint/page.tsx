@@ -27,7 +27,8 @@ export default function MintPage() {
       }
 
       const data = await response.json();
-      setMintResult(`NFT minted successfully! Signature: ${data.signature}`);
+      console.log(data);
+      setMintResult(`NFT minted successfully! MintNumber: ${JSON.stringify(data.mintNumber)}, signature: ${JSON.stringify(data.signature)}`);
     } catch (error) {
       console.error('Minting error:', error);
       setMintResult('Minting failed. Please try again.');
