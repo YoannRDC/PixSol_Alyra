@@ -17,3 +17,9 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.winner {
+  font-weight: bold;
+  color: #4CAF50;
+  margin-top: 10px;
+}
