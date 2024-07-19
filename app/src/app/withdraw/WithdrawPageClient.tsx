@@ -23,12 +23,16 @@ import * as anchor from "@project-serum/anchor";
 import { confirmTx } from '../utils/helper';
 
 export default function WithdrawPageClient() {
+
+  // Front needs
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [assetId, setAssetId] = useState<string | null>(null);
-  const [vaultAddress, setVaultAddress] = useState<string>('');
   const [xValue, setXValue] = useState<number>(1);
   const [yValue, setYValue] = useState<number>(1);
+
+  // Back needs
+  const [vaultAddress, setVaultAddress] = useState<string>('');
   const wallet = useWallet();
   const [umi, setUmi] = useState<any>(null);
   const anchorWallet = useAnchorWallet(); 

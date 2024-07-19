@@ -12,7 +12,7 @@ function getCoordinatesFromId(id: number): { x: number; y: number } {
 }
 
 function getIdFromCoordinates(x: number, y: number): number {
-    return (y - 1) * 1000 + x;
+    return (y - 1) * 20 + x;
 }
 
 
