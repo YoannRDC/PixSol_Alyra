@@ -67,7 +67,7 @@ export default function WithdrawPageClient() {
       // ******
 
       // See: declare_id!("6o6i8WPQLGoc78qvrLLU1sHTPvjg7eDztfgP26cfUrWZ");
-      const pixsol_governance_program = "6o6i8WPQLGoc78qvrLLU1sHTPvjg7eDztfgP26cfUrWZ";
+      const pixsol_governance_program = "BXJseNLM3Gor8eHsoqVHjMiCXTk3mdvS9YrnMHUetpnV";
       const PROGRAM_ID = new PublicKey(pixsol_governance_program);
       
       const response = await fetch('/idl.json');
@@ -78,56 +78,67 @@ export default function WithdrawPageClient() {
           commitment: "confirmed",
         });
         const program = new Program(idl, PROGRAM_ID, provider);
+
+        
+        // ******
+        // Define Account addresses
+        // ******
+        const dictionary_address = "n3o2JGdht5z9fzwuVutpEUnZaexybmhNEXtAiKGnZef";
+        const vault_address = "7upZ6We1oXSKKkzLM9Xt8ZhkZVL9tYp3pfksSLjbnk8H";
           
         // ******
         // READ Account.
         // ******
-        const pixel_board_account = await program.account.pixelBoard.all();
-        console.log("pixel_board_account:", pixel_board_account);
-        
-        setLog(JSON.stringify(pixel_board_account, null, 2));
+        const dictionary_account = await program.account.dictionary.all();
+        console.log("dictionary_account:", dictionary_account);
+        setLog(JSON.stringify(dictionary_account, null, 2));
 
-        // Call: pub fn is_minted_pixel(ctx: Context<IsMintedPixel>, x: u16, y: u16)
-        const x = 100; 
-        const y = 200; 
-
-        const pixel_Boad_address = "BXtrMtGrghWzhkwwPwnS9A22VvVgna7X6xBEmgx2C8LZ";
-        const pixelBoardPublicKey = publicKey(pixel_Boad_address);
-
-        console.log("pixelBoardPublicKey:", pixelBoardPublicKey);
+        //const vault_account = await program.account.vault.all();
+        //console.log("dictionary_account:", vault_account);
+        //setLog(JSON.stringify(vault_account, null, 2));
 
         // ******
         // CALL function.
         // ******
 
-        // To fetch event data (if the instruction emits an event)
-        const txSignature_no_return = await program.methods
-          .isMintedPixel(x, y)
-          .accounts({
-            pixelBoard: pixelBoardPublicKey,
-          }).rpc();
-
-        console.log("txSignature_no_return:", txSignature_no_return);
-
-        
-        // ******
-        // CALL function with answer
-        // ******
-
-        // To fetch event data (if the instruction emits an event)
-        const result = await program.methods
-        .isMintedPixelV2(x, y)
+        // Call withdraw_and_reset
+        const txSignature = await program.methods
+        .withdrawAndReset(4)
         .accounts({
-          pixelBoard: pixelBoardPublicKey,
+          dictionary: dictionary_address,
+          vault: vault_address,
         }).rpc();
 
-        console.log("result:", result);
-        setEventLog(JSON.stringify(result, null, 2));
+        /* 
+
+        // To fetch event data (if the instruction emits an event)
+         const txSignature = await program.methods
+          .read(30)
+          .accounts({
+            dictionary: dictionary_address,
+          }).rpc();
+
+        console.log("txSignature:", txSignature);
+
+        // Fetch the transaction to get event data
+        const tx = await connection.getParsedTransaction(txSignature, 'confirmed');
+        const logs = tx?.meta?.logMessages;
+
+        // Parse the logs to find the event
+        logs?.forEach(log => {
+          if (log.includes('Program log: EntryRead')) {
+            const eventLog = log.split('Program log: EntryRead')[1].trim();
+            const [id, value] = eventLog.split(',');
+            console.log(`Entry with ID ${id} has value ${value}`);
+          }
+        });
+*/
 
         // ******
         // CATCH Event.
         // ******
 
+        // TODO.
 
       }
 
