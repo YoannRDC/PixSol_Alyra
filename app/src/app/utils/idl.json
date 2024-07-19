@@ -1,162 +1,274 @@
 {
-    "version":"0.1.0",
-    "name":"vote",
-    "instructions":[
+  "version": "0.1.0",
+  "name": "mutable_dictionary",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
         {
-            "name":"createProposal",
-            "accounts":[
-                {
-                    "name":"proposal",
-                    "isMut":true,
-                    "isSigner":true
-                },
-                {
-                    "name":"signer",
-                    "isMut":true,
-                    "isSigner":true
-                },
-                {
-                    "name":"systemProgram",
-                    "isMut":false,
-                    "isSigner":false
-                }
-            ],
-            "args":[
-                {
-                    "name":"title",
-                    "type":"string"
-                },
-                {
-                    "name":"description",
-                    "type":"string"
-                },
-                {
-                    "name":"choices",
-                    "type":{
-                    "vec":"string"
-                    }
-                },
-                {
-                    "name":"deadline",
-                    "type":"u64"
-                }
-            ]
+          "name": "dictionary",
+          "isMut": true,
+          "isSigner": true
         },
         {
-            "name":"castVote",
-            "accounts":[
-                {
-                    "name":"proposal",
-                    "isMut":true,
-                    "isSigner":false
-                },
-                {
-                    "name":"voter",
-                    "isMut":true,
-                    "isSigner":false
-                },
-                {
-                    "name":"signer",
-                    "isMut":true,
-                    "isSigner":true
-                },
-                {
-                    "name":"systemProgram",
-                    "isMut":false,
-                    "isSigner":false
-                }
-            ],
-            "args":[
-                {
-                    "name":"choice",
-                    "type":"u8"
-                }
-            ]
-        }
-        ],
-        "accounts":[
+          "name": "vault",
+          "isMut": true,
+          "isSigner": true
+        },
         {
-            "name":"Proposal",
-            "type":{
-                "kind":"struct",
-                "fields":[
-                    {
-                    "name":"title",
-                    "type":"string"
-                    },
-                    {
-                    "name":"description",
-                    "type":"string"
-                    },
-                    {
-                    "name":"choices",
-                    "type":{
-                        "vec":{
-                            "defined":"Choice"
-                        }
-                    }
-                    },
-                    {
-                    "name":"deadline",
-                    "type":"u64"
-                    }
-                ]
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "read",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "update",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u8"
+        },
+        {
+          "name": "depositAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawAndReset",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "updateByBatch",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ids",
+          "type": "bytes"
+        },
+        {
+          "name": "depositAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawAndResetByBatch",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ids",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "readByBatch",
+      "accounts": [
+        {
+          "name": "dictionary",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ids",
+          "type": "bytes"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Dictionary",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "entries",
+            "type": {
+              "array": [
+                {
+                  "defined": "Entry"
+                },
+                100
+              ]
             }
-        },
-        {
-            "name":"Voter",
-            "type":{
-                "kind":"struct",
-                "fields":[
-                    {
-                    "name":"proposal",
-                    "type":"publicKey"
-                    },
-                    {
-                    "name":"user",
-                    "type":"publicKey"
-                    },
-                    {
-                    "name":"choiceOption",
-                    "type":"u8"
-                    }
-                ]
-            }
-        }
-        ],
-        "types":[
-        {
-            "name":"Choice",
-            "type":{
-                "kind":"struct",
-                "fields":[
-                    {
-                    "name":"label",
-                    "type":"string"
-                    },
-                    {
-                    "name":"count",
-                    "type":"u64"
-                    }
-                ]
-            }
-        }
-        ],
-        "errors":[
-        {
-            "code":6000,
-            "name":"MaxChoicesReach",
-            "msg":"Too many choices"
-        },
-        {
-            "code":6001,
-            "name":"InvalidOption",
-            "msg":"Invalid option"
-        },
-        {
-            "code":6002,
-            "name":"VotingIsOver",
-            "msg":"Vote is over"
-        }
-    ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "totalBalance",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Entry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u8"
+          },
+          {
+            "name": "value",
+            "type": "u32"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidId",
+      "msg": "Invalid ID"
+    },
+    {
+      "code": 6001,
+      "name": "EntryNotFound",
+      "msg": "Entry not found"
+    },
+    {
+      "code": 6002,
+      "name": "Overflow",
+      "msg": "Overflow occurred"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidDepositAmount",
+      "msg": "Invalid deposit amount"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds in vault"
+    }
+  ]
 }
