@@ -1,13 +1,26 @@
 'use client'
+import axios, { AxiosResponse } from "axios";
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import {SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
 import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast, Grid, Image } from '@chakra-ui/react';
 
 interface NFT {
-  id: string;
   name: string;
   image: string;
+}
+interface QuickNodeNFTResponse {
+  jsonrpc: string;
+  id: number;
+  result: Array<{
+    name: string;
+    image: string;
+  }>;
+}
+
+interface MintResponse {
+  mintNumber: string;
+  signature: string;
 }
 
 export default function MintPage() {
@@ -18,6 +31,8 @@ export default function MintPage() {
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
   const toast = useToast();
 
+  const COLLECTION_ADDRESS = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
+
   useEffect(() => {
     if (connected && publicKey) {
       fetchNFTs();
@@ -25,22 +40,51 @@ export default function MintPage() {
   }, [connected, publicKey]);
 
   const fetchNFTs = async () => {
-    if (!publicKey) return;
-
     setIsLoadingNFTs(true);
     try {
-      const response = await fetch(`/api/get-nfts?address=${publicKey.toString()}`);
-      if (!response.ok) {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      const data = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "qn_fetchNFTsByCollection",
+        params: [
+          {
+            collection: COLLECTION_ADDRESS,
+            page: 1,
+            perPage: 10, // You can adjust this number
+          },
+        ],
+      };
+
+      const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
+        process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
+        data,
+        config
+      );
+      
+      if (response.data && response.data.result && response.data.result.nfts) {
+        setNfts(response.data.result.nfts);
+      } else {
         throw new Error('Failed to fetch NFTs');
       }
-      const data = await response.json();
-      setNfts(data.nfts);
     } catch (error) {
       console.error('Error fetching NFTs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch NFTs. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsLoadingNFTs(false);
     }
   };
+
 
   const handleMint = async () => {
     if (!publicKey) return;
@@ -103,7 +147,7 @@ export default function MintPage() {
       <Tabs variant="enclosed" className="bg-gray-100 rounded-lg shadow-md">
         <TabList className="bg-white border-b border-gray-200">
           <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Mint NFT</Tab>
-          <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">My Collection</Tab>
+          <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Collection NFTs</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -129,18 +173,18 @@ export default function MintPage() {
             </Box>
           </TabPanel>
           <TabPanel>
-          <Box className="p-6">
-              <Text fontSize="2xl" className="mb-4 font-bold text-gray-800">My Collection</Text>
+            <Box className="p-6">
+              <Text fontSize="2xl" className="mb-4 font-bold text-gray-800">Collection NFTs</Text>
               {!connected ? (
-                <Text className="text-red-500">Please connect your wallet to view your collection.</Text>
+                <Text className="text-red-500">Please connect your wallet to view the collection.</Text>
               ) : isLoadingNFTs ? (
-                <Text>Loading your NFTs...</Text>
+                <Text>Loading NFTs...</Text>
               ) : nfts.length === 0 ? (
-                <Text>You don't have any NFTs in your collection yet.</Text>
+                <Text>No NFTs found in this collection.</Text>
               ) : (
                 <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
-                  {nfts.map((nft) => (
-                    <Box key={nft.id} borderWidth="1px" borderRadius="lg" overflow="hidden">
+                  {nfts.map((nft, index) => (
+                    <Box key={index} borderWidth="1px" borderRadius="lg" overflow="hidden">
                       <Image src={nft.image} alt={nft.name} />
                       <Box p="6">
                         <Text fontWeight="semibold">{nft.name}</Text>
