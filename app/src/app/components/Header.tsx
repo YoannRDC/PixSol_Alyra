@@ -58,6 +58,8 @@ const Header: React.FC = () => {
     );
 };
 
+
+
 interface NavLinkProps {
     href: string;
     children: React.ReactNode;
@@ -65,16 +67,15 @@ interface NavLinkProps {
 }
 
 const NavLink: React.FC<NavLinkProps> = ({ href, children, isActive }) => (
-    <NextLink href={href} passHref>
-        <Button 
-            as="a" 
-            variant={isActive ? "solid" : "ghost"} 
-            colorScheme={isActive ? "blue" : "gray"}
-            color={useColorModeValue('gray.600', 'white')}
-        >
-            {children}
-        </Button>
-    </NextLink>
+    <Button
+        as={NextLink}
+        href={href}
+        variant={isActive ? "solid" : "ghost"}
+        colorScheme={isActive ? "blue" : "gray"}
+        color={useColorModeValue('gray.600', 'white')}
+    >
+        {children}
+    </Button>
 );
 
 export default Header;

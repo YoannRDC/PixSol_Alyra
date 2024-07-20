@@ -122,6 +122,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
           // For the BDD update
           const key = `x${x}y${y}`;
+          console.log("key:", key);
+          console.log("pixelData:", pixelData);
           if (pixelData[key]) {
             pixelsUpdateBDD[key] = pixelData[key].color;
             console.log("pixelsUpdateBDD[key]:", pixelsUpdateBDD[key]);
@@ -143,6 +145,11 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
         console.log("publicKey:", player_pubkey.toString());
         console.log("pixelsUpdateBDD:", pixelsUpdateBDD);
+
+        console.log("JSON:", JSON.stringify({
+          pixels: pixelsUpdateBDD,
+          player_pubkey: player_pubkey.toString(),
+        }));
 
         // Call your API to update the pixel data
         const response = await fetch('/api/pixels-color-update', {

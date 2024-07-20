@@ -39,6 +39,7 @@ export class RedisPixelRepository implements PixelRepository {
 
   async updatePixels(pixels: PixelData[]): Promise<void> {
     const pipeline = this.redis.pipeline();
+    console.log("updatePixels:", pixels);
     pixels.forEach(pixel => {
       pipeline.hset(`pixel:${pixel.address}`, {
         color: pixel.color,
