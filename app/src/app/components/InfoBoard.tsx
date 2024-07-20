@@ -17,10 +17,7 @@ interface InfoBoardProps {
 const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onImageUpload, onBuy }) => {
 
   // Front imports
-  const { setVisible } = useWalletModal()
   const [selectedOption, setSelectedOption] = useState<'color' | 'image'>('color')
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Back imports
   const { 
@@ -28,16 +25,24 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     programInitialized 
   } = useMutableDictionary();
   const { connected } = useWallet();
-  const [dictionaryInfo, setDictionaryInfo] = useState<any>(null);
-  const [vaultInfo, setVaultInfo] = useState<any>(null);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
-  const [pixelId, setPixelId] = useState<number>(0);
-  const [depositAmount, setDepositAmount] = useState<number>(10000000); // 0.01 SOL in lamports
   const [batchIds, setBatchIds] = useState<string>('');
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
+  const [pixelIds, setPixelIds] = useState<number[]>([]);
 
   const isMultiplePixelsSelected = useMemo(() => {
+
     if (!selectedArea) return false
+    
+    // Display pixel IDs to the Front
+    const pixels: number[] = [];
+    for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+      for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+        pixels.push(y * 20 + x);
+      }
+    }
+    setPixelIds(pixels);
+
     const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
     const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
     return width > 1 || height > 1
@@ -48,6 +53,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       setUpdateStatus('Please connect your wallet and wait for program initialization.');
       return;
     }
+
+    console.log("batchIds:", batchIds);
 
     const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
     if (ids.length === 0) {
@@ -65,26 +72,33 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     }
   };
 
-  const handleColorPixelButtonClick = async () => {
+  const handleChangePixelColorButtonClick = async () => {
 
     if (selectedArea) {
+
+      console.log("selectedArea.start.x:", selectedArea.start.x)
+      console.log("selectedArea.start.y:", selectedArea.start.y)
+      console.log("selectedArea.end.x:", selectedArea.end.x)
+      console.log("selectedArea.end.y:", selectedArea.end.y)
 
       // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-          pixels.push(y * 20 + x + 1);
+          pixels.push(y * 20 + x);
         }
       }
+      console.error("pixels:", pixels);
 
       const pixelString = pixels.join(',');
+      console.error("pixelString:", pixelString);
       setBatchIds(pixelString);
 
       handleUpdateByBatch();
  
     } else {
       const errorMsg = 'Select an Area before Change color.';
-      setError(errorMsg);
+      setUpdateStatus(errorMsg);
       console.error(errorMsg);
     }
   }
@@ -103,6 +117,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           <h2>Selected Area</h2>
           <p>From: x{selectedArea.start.x}y{selectedArea.start.y}</p>
           <p>To: x{selectedArea.end.x}y{selectedArea.end.y}</p>
+          {pixelIds.length > 0 && (
+            <div>
+              <h3>Pixel IDs:</h3>
+              <p>{pixelIds.join(', ')}</p>
+            </div>
+          )}
           <div>
             <button className={styles.imageButton} onClick={() => setSelectedOption('color')}>Color</button>
             <button 
@@ -116,8 +136,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           </div>
           {selectedOption === 'color' ? (
             <ColorWheel 
-              onChange={color => onColorChange(color.toString('hex'))} 
-              UNSAFE_style={{ width: '150px', height: '150px' }} 
+              onChange={color => onColorChange(color.toString('hex'))}
             />
           ) : (
             isMultiplePixelsSelected ? (
@@ -131,14 +150,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         <p>Select a Pixel or an area on the pixel board</p>
       )}
       <button 
-        onClick={handleColorPixelButtonClick} 
+        onClick={handleChangePixelColorButtonClick} 
         className={styles.buyButton}
         disabled={connected && !selectedArea}
       >
-        {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
+        {connected ? (selectedArea ? 'Change Pixel(s) color' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </button>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-      {success && <p className="text-green-500 mt-4">{success}</p>}
       {updateStatus && <p className="text-green-500 mt-4">{updateStatus}</p>}
     </div>
   )
