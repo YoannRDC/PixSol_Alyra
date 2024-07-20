@@ -134,17 +134,19 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
               Image
             </button>
           </div>
-          {selectedOption === 'color' ? (
-            <ColorWheel 
-              onChange={color => onColorChange(color.toString('hex'))}
-            />
-          ) : (
-            isMultiplePixelsSelected ? (
-              <input type="file" accept="image/*" onChange={handleImageUpload} />
+          <div>
+            {selectedOption === 'color' ? (
+              <ColorWheel 
+                onChange={color => onColorChange(color.toString('hex'))}
+              />
             ) : (
-              <p>Select at least 2x2 pixels to upload an image</p>
-            )
-          )}
+              isMultiplePixelsSelected ? (
+                <input type="file" accept="image/*" onChange={handleImageUpload} />
+              ) : (
+                <p>Select at least 2x2 pixels to upload an image</p>
+              )
+            )}
+          </div>
         </>
       ) : (
         <p>Select a Pixel or an area on the pixel board</p>
