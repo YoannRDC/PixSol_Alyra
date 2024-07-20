@@ -30,6 +30,7 @@ const Header: React.FC = () => {
                     <NavLink href="/lottery" isActive={pathname === "/lottery"}>Lottery</NavLink>
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
                     <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>Smart Contract Demo</NavLink>
+                    <NavLink href="/httpWebsocket" isActive={pathname === "/httpWebsocket"}>HTTP / WebSocket </NavLink>
                 </HStack>
 
                 <Flex alignItems="center">
@@ -52,6 +53,7 @@ const Header: React.FC = () => {
                     <NavLink href="/lottery" isActive={pathname === "/lottery"}>Lottery</NavLink>
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
                     <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>SC Demo</NavLink>
+                    <NavLink href="/httpWebsocket" isActive={pathname === "/httpWebsocket"}>SC Demo</NavLink>
                 </VStack>
             </Collapse>
         </Box>

@@ -38,8 +38,10 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
   const [pixelIds, setPixelIds] = useState<number[]>([]);
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, player_pubkey: string } }>({})
+  const [pixelsUpdateBDD, setPixelsUpdateBDD] = useState<{ [key: string]: string }>({});
+  const [triggerUpdateBDD, setTriggerUpdateBDD] = useState(false);
+  const [triggerUpdateSC, setTriggerUpdateSC] = useState(false);
   const [isLoading, setIsLoading] = useState(true)
-
   const toast = useToast();
 
   const isMultiplePixelsSelected = useMemo(() => {
@@ -66,13 +68,16 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   }, [selectedArea])
 
   const handleUpdateByBatch = async () => {
+    console.log("handleUpdateByBatch ...");
     if (!connected || !programInitialized) {
+      console.log("(1) ...");
       setUpdateStatus('Please connect your wallet and wait for program initialization.')
       return
     }
 
     const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
     if (ids.length === 0) {
+      console.log("(2) ...");
       setUpdateStatus('Please enter valid pixel IDs for batch update.')
       return
     }
@@ -85,8 +90,15 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
     setUpdateStatus('Updating pixels in batch...')
     try {
+      console.log("(3) ...");
       const tx = await updateByBatch(ids, batchDepositAmount);
+      console.log("(4) ...");
       const successMsg = `Batch update successful. Transaction signature: ${tx}`;
+      
+      // trigger BDD update
+      setTriggerUpdateBDD(true);
+
+      // Inform user.
       setUpdateStatus(successMsg);
 
       toast({
@@ -96,6 +108,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       });
 
     } catch (error) {
+      console.log("(5) ...");
       const errorMsg = `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
       console.error('Batch update failed:', errorMsg)
       setUpdateStatus(errorMsg);
@@ -108,12 +121,54 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     }
   }
 
+  // Smart contract update trigger.
+  useEffect(() => {
+    if (triggerUpdateSC) {
+      handleUpdateByBatch();
+      setTriggerUpdateBDD(false);
+    }
+  }, [triggerUpdateSC]);
+
+  // BDD update trigger.
+  useEffect(() => {
+    if (triggerUpdateBDD) {
+      triggerUpdateBDDcolors();
+      setTriggerUpdateBDD(false);
+    }
+  }, [triggerUpdateBDD]);
+
+const triggerUpdateBDDcolors = async () => {
+  
+    if (player_pubkey) {
+    
+      console.log("JSON:", JSON.stringify({
+        pixels: pixelsUpdateBDD,
+        player_pubkey: player_pubkey.toString(),
+      }));
+
+      // Call your API to update the pixel data
+      const response = await fetch('/api/pixels-color-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pixels: pixelsUpdateBDD,
+          player_pubkey: player_pubkey.toString(),
+        }),
+      });
+
+      console.log("response:", response);
+    }
+  }
+
   const handleChangePixelColorButtonClick = async () => {
+    console.log("handleChangePixelColorButtonClick ...");
     if (selectedArea && player_pubkey) {
       
       // Convert the pixel selection Position to ids. 
       const pixelsUpdateCounter: number[] = [];
-      const pixelsUpdateBDD: {[key: string]: string} = {}
+      const pixelsUpdateBDD_build: {[key: string]: string} = {}
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
 
@@ -122,56 +177,32 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
           // For the BDD update
           const key = `x${x}y${y}`;
-          console.log("key:", key);
-          console.log("pixelData:", pixelData);
           if (pixelData[key]) {
-            pixelsUpdateBDD[key] = pixelData[key].color;
-            console.log("pixelsUpdateBDD[key]:", pixelsUpdateBDD[key]);
+            pixelsUpdateBDD_build[key] = pixelData[key].color;
           } else {
-            console.log("unknown Pixel:");
           }
         }
       }
-      console.log("pixelsUpdateCounter:", pixelsUpdateCounter);
 
+      // Store the value to update BDD only if transaction success.
+      setPixelsUpdateBDD(pixelsUpdateBDD_build);
+
+      // Store the value to update samrt contract
       const pixelUpdateCounterString = pixelsUpdateCounter.join(',');
       console.log("pixelUpdateCounterString:", pixelUpdateCounterString);
       setBatchIds(pixelUpdateCounterString);
 
-      handleUpdateByBatch();
-
-      const isTransactionSuccess = true;
-      if( isTransactionSuccess ) {
-
-        console.log("publicKey:", player_pubkey.toString());
-        console.log("pixelsUpdateBDD:", pixelsUpdateBDD);
-
-        console.log("JSON:", JSON.stringify({
-          pixels: pixelsUpdateBDD,
-          player_pubkey: player_pubkey.toString(),
-        }));
-
-        // Call your API to update the pixel data
-        const response = await fetch('/api/pixels-color-update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            pixels: pixelsUpdateBDD,
-            player_pubkey: player_pubkey.toString(),
-          }),
-        });
-
-        console.log("response:", response);
-
-      }
+      // Update smart contract
+      setTriggerUpdateSC(true);
+      
     } else {
       setSelectedOption('image')
     }
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleImageUpload ...");
+
     const file = event.target.files?.[0];
     if (file && isValidImageSelection) {
       onImageUpload(file);
@@ -179,7 +210,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   
     if (selectedArea && player_pubkey && file) {
       const img = new Image();
-      img.onload = () => {
+      img.onload = () => {    
+        console.log("img.onload ...");
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -204,13 +236,15 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
             newPixelData[key] = { color, player_pubkey: player_pubkey.toString() };
           }
         }
+        console.log("newPixelData: ", newPixelData);
         setPixelData(newPixelData);
-        console.log("PixelData: ", pixelData);
       };
       img.onerror = () => {
         console.log("Erreur de chargement de l'image");
       };
       img.src = URL.createObjectURL(file);
+    } else {
+      console.log("selectedArea && player_pubkey && file not fullfiled");
     }
   }
   
