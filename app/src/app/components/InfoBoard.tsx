@@ -7,6 +7,7 @@ import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } fr
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
 import { walletAdapterIdentity } from '@metaplex-foundation/js'
+import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
 const BOARD_SIZE = 10; // grid size
@@ -76,15 +77,34 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       return
     }
 
+    toast({
+      duration: 5000,
+      isClosable: true,
+      render: () => <SubmittedToast />
+    });
+
     setUpdateStatus('Updating pixels in batch...')
     try {
-      const tx = await updateByBatch(ids, batchDepositAmount)
-      const successMsg = `Batch update successful. Transaction signature: ${tx}`
-      setUpdateStatus(successMsg)
+      const tx = await updateByBatch(ids, batchDepositAmount);
+      const successMsg = `Batch update successful. Transaction signature: ${tx}`;
+      setUpdateStatus(successMsg);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <SuccessToast signature={tx} />
+      });
+
     } catch (error) {
       const errorMsg = `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
       console.error('Batch update failed:', errorMsg)
-      setUpdateStatus(errorMsg)
+      setUpdateStatus(errorMsg);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage={errorMsg} />
+      });
     }
   }
 
@@ -139,7 +159,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         console.log("response:", response);
 
       }
- 
     } else {
       setSelectedOption('image')
     }
@@ -192,16 +211,20 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
       {selectedArea ? (
         <VStack spacing={4} align="stretch">
-          <Heading size="md">Selected Area</Heading>
+          <Heading size="md" color="navy" >Selected Area</Heading>
           <Flex justifyContent="space-between">
             <VStack spacing={2} align="stretch">
-              <Text>From: x{selectedArea.start.x}, y{selectedArea.start.y}</Text>
-              <Text>To: x{selectedArea.end.x}, y{selectedArea.end.y}</Text>
+              <Text>
+                From: <Text as="span" fontSize="sm">(x{selectedArea.start.x}, y{selectedArea.start.y})</Text>
+              </Text>
+              <Text>
+                To: <Text as="span" fontSize="sm">(x{selectedArea.end.x}, y{selectedArea.end.y})</Text>
+                </Text>
             </VStack>
-            <Divider orientation="vertical" />
+            <Divider orientation="vertical" mx={1} borderColor="navy" height="auto" />
             <VStack spacing={2} align="stretch">
-              <Text>Pixel Resolution:</Text>
-              <Text>{Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}</Text>
+              <Text>Image Resolution:</Text>
+              <Text fontSize="sm">({Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}) px</Text>
             </VStack>
           </Flex>
           <Flex>
@@ -224,29 +247,31 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           {selectedOption === 'color' ? (
             <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
           ) : (
-            isMultiplePixelsSelected ? (
-              <Input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageUpload} 
-                disabled={!isValidImageSelection}
-              />
-            ) : (
-              <Text>Select at least 2x2 pixels to upload an image</Text>
-            )
+            <Input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+              disabled={!isValidImageSelection}
+            />
           )}
         </VStack>
       ) : (
-        <Text>Select a Pixel or an area on the pixel board</Text>
+        <Text>Select a Pixel or an area on the board</Text>
       )}
       <Button 
         onClick={handleChangePixelColorButtonClick} 
         colorScheme="green" 
         mt={4}
-        isDisabled={connected && !selectedArea}
+        isDisabled={!connected || !selectedArea}
       >
         {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </Button>
+      {selectedOption === 'image' && !isValidImageSelection && (
+        <Text color="red.500" mt={2} fontSize="sm">
+          Please select at least a 2x2 area to upload an image. 
+          Selections of 1 line or 1 row are not allowed for image uploads.
+        </Text>
+      )}
     </Box>
   )
 }

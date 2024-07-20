@@ -1,19 +1,26 @@
-import { PixelData } from '../types/PixelData';
-import { PixelRepository } from '../repositories/PixelRepository';
+import { RedisPixelRepository } from '../repositories/RedisPixelRepository';
+import { PixelService } from '../services/PixelService';
 
-export class PixelService {
-  constructor(private repository: PixelRepository) {}
 
-  async buyPixels(pixels: { address: string, color: string, player_pubkey: string }[]): Promise<void> {
-    const pixelsToUpdate = pixels.map(({ address, color, player_pubkey }) => ({
-      address,
-      color,
-      player_pubkey
-    }));
-    await this.repository.updatePixels(pixelsToUpdate);
-  }
+class SingletonPixelService {
+    private static instance: SingletonPixelService;
+    private pixelService: PixelService;
 
-  async getAllPixels(): Promise<PixelData[]> {
-    return this.repository.getAllPixels();
-  }
+    private constructor() {
+        const redisRepository = new RedisPixelRepository();
+        this.pixelService = new PixelService(redisRepository);
+    }
+
+    public static getInstance(): SingletonPixelService {
+        if (!SingletonPixelService.instance) {
+        SingletonPixelService.instance = new SingletonPixelService();
+        }
+        return SingletonPixelService.instance;
+    }
+
+    public getPixelService(): PixelService {
+        return this.pixelService;
+    }
 }
+
+export default SingletonPixelService;
