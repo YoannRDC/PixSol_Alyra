@@ -146,7 +146,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
               Color
             </Button>
             <Button 
-              onClick={handleImageButtonClick} 
+              onClick={handleChangePixelColorButtonClick} 
               colorScheme={selectedOption === 'image' ? 'blue' : 'gray'} 
               disabled={!isMultiplePixelsSelected}
               title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
@@ -180,8 +180,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       >
         {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </Button>
-      {error && <Text color="red.500" mt={4}>{error}</Text>}
-      {success && <Text color="green.500" mt={4}>{success}</Text>}
     </Box>
   )
 }
