@@ -202,7 +202,7 @@ pub struct Withdraw<'info> {
 //     #[account(mut)]
 //     pub user_token_account: Account<'info, TokenAccount>,
 //     pub user: Signer<'info>,
-//     pub vault: Account<'info, Vault>,
+//     pub vault: Account<'info, Vaudlt>,
 // }
 
 #[error_code]
