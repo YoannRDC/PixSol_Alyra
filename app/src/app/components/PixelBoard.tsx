@@ -190,7 +190,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
             selectedArea={currentSelection}
             onColorChange={onColorChange}
             onImageUpload={onImageUpload}
-            onBuy={onBuy}
+            //onBuy={onBuy}
           />
         </Box>
       )}
@@ -223,7 +223,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
                   selectedArea={currentSelection}
                   onColorChange={onColorChange}
                   onImageUpload={onImageUpload}
-                  onBuy={onBuy}
+                  // onBuy={onBuy}
                 />
               </ModalBody>
             </ModalContent>

@@ -12,14 +12,14 @@ export class RedisPixelRepository implements PixelRepository {
   async savePixel(pixel: PixelData): Promise<void> {
     await this.redis.hset(`pixel:${pixel.address}`, {
       color: pixel.color,
-      owner: pixel.owner
+      player_pubkey: pixel.player_pubkey
     });
   }
 
   async getPixel(address: string): Promise<PixelData | null> {
     const pixel = await this.redis.hgetall(`pixel:${address}`);
     if (!pixel.color) return null;
-    return { address, color: pixel.color, owner: pixel.owner };
+    return { address, color: pixel.color, player_pubkey: pixel.player_pubkey };
   }
 
   async getAllPixels(): Promise<PixelData[]> {
@@ -33,7 +33,7 @@ export class RedisPixelRepository implements PixelRepository {
     return results!.map((result , index) => ({
       address: keys[index].split(':')[1],
       color: (result[1] as any).color,
-      owner: (result[1] as any).owner,
+      player_pubkey: (result[1] as any).player_pubkey,
     }));
   }
 
@@ -42,7 +42,7 @@ export class RedisPixelRepository implements PixelRepository {
     pixels.forEach(pixel => {
       pipeline.hset(`pixel:${pixel.address}`, {
         color: pixel.color,
-        owner: pixel.owner
+        player_pubkey: pixel.player_pubkey
       });
     });
     await pipeline.exec();

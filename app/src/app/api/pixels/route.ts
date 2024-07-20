@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import SingletonPixelService from '../pixelService';
+
+const SingletonPixelService = require('../pixelService');
 
 export async function GET() {
   try {
