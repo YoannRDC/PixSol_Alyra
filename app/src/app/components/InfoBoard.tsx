@@ -31,6 +31,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const [batchIds, setBatchIds] = useState<string>('');
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
   const [pixelIds, setPixelIds] = useState<number[]>([]);
+  const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
 
   const isMultiplePixelsSelected = useMemo(() => {
 
@@ -79,11 +80,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
     if (selectedArea) {
 
-      console.log("selectedArea.start.x:", selectedArea.start.x)
-      console.log("selectedArea.start.y:", selectedArea.start.y)
-      console.log("selectedArea.end.x:", selectedArea.end.x)
-      console.log("selectedArea.end.y:", selectedArea.end.y)
-
       // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
@@ -98,6 +94,24 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       setBatchIds(pixelString);
 
       handleUpdateByBatch(pixelString);
+
+      //******** */
+      // UPDATE THE BDD
+      //******** */
+
+      // TODO: Catch event "Pixel color changed" (Transaction OK)
+      const isChangeColorTransactionSuccess = true;
+
+      if (isChangeColorTransactionSuccess) {
+        console.log('Pixels bought successfully. Updating bdd.');
+        // Refresh pixel data after purchase
+
+        // TODO: Update the BDD.
+
+        
+      } else {
+        console.error('Error in transaction: change pixel(s) color(s)');
+      }
  
     } else {
       const errorMsg = 'Select an Area before Change color.';
