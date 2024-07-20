@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
-import PixelBoard from './components/PixelBoard'
-import InfoBoard from './components/InfoBoard'
-import styles from './styles/page.module.css'
+import { useState, useCallback, useEffect } from 'react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import PixelBoard from './components/PixelBoard';
+import InfoBoard from './components/InfoBoard';
+import { Box, Heading, Flex } from '@chakra-ui/react';
 
 // WARNING: CHANGE ALSO IN INFO BORAD
 const BOARD_SIZE = 10; // grid size
@@ -154,30 +154,22 @@ export default function Home() {
   }, [selectedArea, publicKey, connection, pixelData, sendTransaction]);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Pixel Board</h1>
-      <div className={styles.content}>
-        <div className={styles.pixelBoard}>
+    <Box className="flex flex-col h-screen p-4">
+      <Heading as="h1" size="lg" className="text-center mb-4">Pixel Board</Heading>
+      <Flex className="flex-1 gap-4">
+        <Box className="flex-1 h-full overflow-hidden">
           <PixelBoard 
             onSelectionChange={handleSelectionChange} 
             pixelData={pixelData} 
             boardSize={BOARD_SIZE}
             isLoading={isLoading}
-            {...({} as any)}
-          />
-        </div>
-        <div className={styles.infoBoard}>
-          <InfoBoard
-            selectedArea={selectedArea}
             onColorChange={handleColorChange}
             onImageUpload={handleImageUpload}
             onBuy={handleBuy}
-            isLoading={isLoading}
-            {...({} as any)}
             isConnected={!!publicKey}
           />
-        </div>
-      </div>
-    </div>
-  )
+        </Box>
+      </Flex>
+    </Box>
+  );
 }

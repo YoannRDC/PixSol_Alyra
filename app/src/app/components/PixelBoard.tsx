@@ -1,112 +1,236 @@
-'use client'
-
-import React, { useState, useEffect, useCallback } from 'react'
-import styles from '../styles/PixelBoard.module.css'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import {
+  Box,
+  Button,
+  VStack,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useBreakpointValue,
+  Flex,
+  Center,
+} from '@chakra-ui/react'
+import InfoBoard from './InfoBoard'
 
 interface PixelBoardProps {
   onSelectionChange: (selection: {start: {x: number, y: number}, end: {x: number, y: number}} | null) => void
-  pixelData: { [key: string]: { color?: string, imageData?: ImageData } }
-  boardSize: number // Assuming a square board, e.g., 20x20
+  pixelData: { [key: string]: { color: string, owner: string } }
+  boardSize: number
+  isLoading: boolean
+  onColorChange: (color: string) => void
+  onImageUpload: (image: File) => void
+  onBuy: () => void
+  isConnected: boolean
 }
 
-const PixelBoard: React.FC<PixelBoardProps> = ({ onSelectionChange, pixelData, boardSize }) => {
-  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null)
-  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null)
-  const [isSelecting, setIsSelecting] = useState(false)
+const PixelBoard: React.FC<PixelBoardProps> = ({
+  onSelectionChange,
+  pixelData,
+  boardSize,
+  isLoading,
+  onColorChange,
+  onImageUpload,
+  onBuy,
+  isConnected
+}) => {
+  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [currentSelection, setCurrentSelection] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const boardRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = useCallback((x: number, y: number) => {
-    setSelectionStart({x, y})
-    setSelectionEnd({x, y})
-    setIsSelecting(true)
-  }, [])
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
-  const handleMouseMove = useCallback((x: number, y: number) => {
-    if (isSelecting) {
-      setSelectionEnd({x, y})
+  const getPixelCoordinates = useCallback((clientX: number, clientY: number) => {
+    if (boardRef.current) {
+      const rect = boardRef.current.getBoundingClientRect()
+      const x = Math.floor((clientX - rect.left) / (rect.width / boardSize))
+      const y = Math.floor((clientY - rect.top) / (rect.height / boardSize))
+      return { x: Math.max(0, Math.min(x, boardSize - 1)), y: Math.max(0, Math.min(y, boardSize - 1)) }
     }
-  }, [isSelecting])
+    return null
+  }, [boardSize])
 
-  const handleMouseUp = useCallback(() => {
+  const handleSelectionStart = useCallback((clientX: number, clientY: number) => {
+    const coords = getPixelCoordinates(clientX, clientY)
+    if (coords) {
+      setSelectionStart(coords)
+      setSelectionEnd(coords)
+      setIsSelecting(true)
+
+      setCurrentSelection(null)
+      onSelectionChange(null)
+    }
+  }, [getPixelCoordinates, onSelectionChange])
+
+  const handleSelectionMove = useCallback((clientX: number, clientY: number) => {
+    if (isSelecting) {
+      const coords = getPixelCoordinates(clientX, clientY)
+      if (coords) {
+        setSelectionEnd(coords)
+      }
+    }
+  }, [isSelecting, getPixelCoordinates])
+
+  const handleSelectionEnd = useCallback(() => {
     setIsSelecting(false)
     if (selectionStart && selectionEnd) {
+      const newSelection = {start: selectionStart, end: selectionEnd}
+      setCurrentSelection(newSelection)
       onSelectionChange({start: selectionStart, end: selectionEnd})
     }
   }, [selectionStart, selectionEnd, onSelectionChange])
 
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    handleSelectionStart(event.clientX, event.clientY)
+  }, [handleSelectionStart])
+
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    handleSelectionMove(event.clientX, event.clientY)
+  }, [handleSelectionMove])
+
+  const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    const touch = event.touches[0]
+    handleSelectionStart(touch.clientX, touch.clientY)
+  }, [handleSelectionStart])
+
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    const touch = event.touches[0]
+    handleSelectionMove(touch.clientX, touch.clientY)
+  }, [handleSelectionMove])
+
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      setIsSelecting(false)
+      handleSelectionEnd();
     }
 
-    window.addEventListener('mouseup', handleGlobalMouseUp)
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [])
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('touchend', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchend', handleGlobalMouseUp);
+    }
+  }, [handleSelectionEnd])
+
+  const handleConfirmSelection = useCallback(() => {
+    if (currentSelection) {
+      onSelectionChange(currentSelection);
+      if (isMobile) {
+        onOpen();
+      }
+    }
+  }, [selectionStart, selectionEnd, onSelectionChange, onOpen, isMobile])
 
   const renderPixel = useCallback((x: number, y: number) => {
     const key = `x${x}y${y}`
     const pixelStyle: React.CSSProperties = {
       width: `${100 / boardSize}%`,
-      height: `${100 / boardSize}%`,
+      paddingBottom: `${100 / boardSize}%`,
       border: '1px solid #ccc',
       boxSizing: 'border-box',
-      
-    }
+      position: 'relative',
+      backgroundColor: pixelData[key]?.color || 'white',
+    };
 
-    if (pixelData[key]) {
-      if (pixelData[key].color) {
-        pixelStyle.backgroundColor = pixelData[key].color
-      } else if (pixelData[key].imageData) {
-        const canvas = document.createElement('canvas')
-        canvas.width = 1
-        canvas.height = 1
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          ctx.putImageData(pixelData[key].imageData!, 0, 0)
-          pixelStyle.backgroundImage = `url(${canvas.toDataURL()})`
-          pixelStyle.backgroundSize = 'cover'
-        }
-      }
-    }
-
-    if (selectionStart && selectionEnd) {
-      const minX = Math.min(selectionStart.x, selectionEnd.x)
-      const maxX = Math.max(selectionStart.x, selectionEnd.x)
-      const minY = Math.min(selectionStart.y, selectionEnd.y)
-      const maxY = Math.max(selectionStart.y, selectionEnd.y)
+    if (currentSelection) {
+      const minX = Math.min(currentSelection.start.x, currentSelection.end.x);
+      const maxX = Math.max(currentSelection.start.x, currentSelection.end.x);
+      const minY = Math.min(currentSelection.start.y, currentSelection.end.y);
+      const maxY = Math.max(currentSelection.start.y, currentSelection.end.y);
 
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-        pixelStyle.boxShadow = 'inset 0 0 0 2px blue'
+        pixelStyle.boxShadow = 'inset 0 0 0 2px blue';
       }
     }
 
-    return (
-      <div
-        key={key}
-        style={pixelStyle}
-        onMouseDown={() => handleMouseDown(x, y)}
-        onMouseMove={() => handleMouseMove(x, y)}
-        onMouseUp={handleMouseUp}
-      />
-    )
-  }, [pixelData, boardSize, selectionStart, selectionEnd, handleMouseDown, handleMouseMove, handleMouseUp])
+    return <Box key={key} style={pixelStyle} />
+  }, [pixelData, boardSize, currentSelection])
+
+  if (isLoading) {
+    return <Box>Loading...</Box>
+  }
 
   return (
-    <div 
-      className={styles.board}
-      onMouseLeave={() => setIsSelecting(false)}
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        width: '100%',
-        aspectRatio: '1 / 1',
-      }}
-    > 
-      {Array.from({ length: boardSize * boardSize }, (_, index) => {
-        const x = index % boardSize
-        const y = Math.floor(index / boardSize)
-        return renderPixel(x, y)
-      })}
-    </div>
+    <Flex 
+      direction={isMobile ? "column" : "row"} 
+      alignItems="flex-start" 
+      width="100%"
+      height="100vh"
+      overflow="hidden"
+    >
+      <Box
+        ref={boardRef}
+        width={isMobile ? "100%" : "calc(100vh - 100px)"}
+        height={isMobile ? "auto" : "calc(100vh - 100px)"}
+        maxWidth={isMobile ? "100%" : "calc(100vh - 100px)"}
+        aspectRatio="1 / 1"
+        margin="0"
+        display="flex"
+        flexWrap="wrap"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        {Array.from({ length: boardSize * boardSize }, (_, index) => {
+          const x = index % boardSize
+          const y = Math.floor(index / boardSize)
+          return renderPixel(x, y)
+        })}
+      </Box>
+      
+      {!isMobile && (
+        <Box width="300px" ml={4} height="calc(100vh - 100px)" overflowY="auto">
+          <InfoBoard
+            selectedArea={currentSelection}
+            onColorChange={onColorChange}
+            onImageUpload={onImageUpload}
+            onBuy={onBuy}
+          />
+        </Box>
+      )}
+
+      {/* Pour les gens sur mobiles par la suite
+      Il faut améliorer l'UI, mettre un meilleur bouton 
+      "Confirm Selection" + adapter un zoom pour sélectionner
+      les pixels. */}
+  
+      {isMobile && (
+        <>
+          <Button 
+          onClick={handleConfirmSelection} 
+          colorScheme="blue" 
+          width="80%" 
+          alignContent="center" 
+          ml="10%"
+          mt={10}
+          isDisabled={!currentSelection}
+        >
+            Confirm Selection
+          </Button>
+          <Modal isOpen={isOpen} onClose={onClose} size="full">
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Pixel Information</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <InfoBoard
+                  selectedArea={currentSelection}
+                  onColorChange={onColorChange}
+                  onImageUpload={onImageUpload}
+                  onBuy={onBuy}
+                />
+              </ModalBody>
+            </ModalContent>
+          </Modal>
+        </>
+      )}
+    </Flex>
   )
 }
 
