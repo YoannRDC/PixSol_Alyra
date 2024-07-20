@@ -6,6 +6,7 @@ import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } from '@chakra-ui/react'
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
+import { walletAdapterIdentity } from '@metaplex-foundation/js'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
 const BOARD_SIZE = 10; // grid size
@@ -31,11 +32,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     updateByBatch,
     programInitialized 
   } = useMutableDictionary();
-  const { connected } = useWallet();
+  const { connected, publicKey } = useWallet();
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
   const [batchIds, setBatchIds] = useState<string>('');
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
   const [pixelIds, setPixelIds] = useState<number[]>([]);
+  const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
 
   const toast = useToast();
 
@@ -87,27 +89,50 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   }
 
   const handleChangePixelColorButtonClick = async () => {
-    if (selectedArea) {
-
-      console.log("selectedArea.start.x:", selectedArea.start.x)
-      console.log("selectedArea.start.y:", selectedArea.start.y)
-      console.log("selectedArea.end.x:", selectedArea.end.x)
-      console.log("selectedArea.end.y:", selectedArea.end.y)
-
+    if (selectedArea && publicKey) {
+      
       // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
           pixels.push(y * BOARD_SIZE + x);
+
         }
       }
-      console.error("pixels:", pixels);
+      console.log("pixels:", pixels);
 
       const pixelString = pixels.join(',');
-      console.error("pixelString:", pixelString);
+      console.log("pixelString:", pixelString);
       setBatchIds(pixelString);
 
       handleUpdateByBatch(pixelString);
+
+      const isTransactionSuccess = true;
+      if( isTransactionSuccess ) {
+
+        const pixelsToBuy: {[key: string]: string} = {}
+        for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+          for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+            const key = `x${x}y${y}`
+            if (pixelData[key]) {
+              pixelsToBuy[key] = pixelData[key].color
+            }
+          }
+        }
+
+        // Call your API to update the pixel data
+        const response = await fetch('/api/pixels-color-update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pixels: pixelsToBuy,
+            player_pubkey: publicKey.toString(),
+          }),
+        });
+
+      }
  
     } else {
       setSelectedOption('image')
@@ -115,9 +140,11 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleImageUpload ...")
     const file = event.target.files?.[0]
     if (file && isValidImageSelection) {
-      onImageUpload(file)
+      console.log("handleImageUpload (2)...")
+      onImageUpload(file);
     }
   }
 
@@ -146,7 +173,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
               Color
             </Button>
             <Button 
-              onClick={handleChangePixelColorButtonClick} 
+              onClick={() => setSelectedOption('image')} 
               colorScheme={selectedOption === 'image' ? 'blue' : 'gray'} 
               disabled={!isMultiplePixelsSelected}
               title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
