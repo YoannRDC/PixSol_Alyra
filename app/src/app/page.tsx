@@ -3,9 +3,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
+import { Box, Heading, Flex } from '@chakra-ui/react'
 import PixelBoard from './components/PixelBoard'
-import InfoBoard from './components/InfoBoard'
-import styles from './styles/page.module.css'
 
 const BOARD_SIZE = 20; // 20x20 grid
 
@@ -152,30 +151,22 @@ export default function Home() {
   }, [selectedArea, publicKey, connection, pixelData, sendTransaction]);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Pixel Board</h1>
-      <div className={styles.content}>
-        <div className={styles.pixelBoard}>
+    <Box p={5}>
+      <Heading as="h1" size="lg" mb={5}>Pixel Board</Heading>
+      <Flex justify="space-between">
+        <Box className="flex-1 mr-5">
           <PixelBoard 
             onSelectionChange={handleSelectionChange} 
             pixelData={pixelData} 
             boardSize={BOARD_SIZE}
             isLoading={isLoading}
-            {...({} as any)}
-          />
-        </div>
-        <div className={styles.infoBoard}>
-          <InfoBoard
-            selectedArea={selectedArea}
             onColorChange={handleColorChange}
             onImageUpload={handleImageUpload}
             onBuy={handleBuy}
-            isLoading={isLoading}
-            {...({} as any)}
             isConnected={!!publicKey}
           />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Flex>
+    </Box>
   )
 }

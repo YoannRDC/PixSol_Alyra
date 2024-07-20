@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
-import styles from '../styles/InfoBoard.module.css'
+import { Box, Button, Heading, Text, Flex, VStack, Input } from '@chakra-ui/react';
 
 // Back needs
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
@@ -111,9 +111,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
       // setBatchDepositAmount(); // Default values are fine.
       console.log('BatchDepositAmount:', JSON.stringify(batchDepositAmount) );
-
       handleUpdateByBatch();
-
       onBuy()
     } else {
       const errorMsg = 'Select an Area before Change color.';
@@ -130,46 +128,64 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   }
 
   return (
-    <div className={styles.infoBoard}>
+    <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
       {selectedArea ? (
-        <>
-          <h2>Selected Area</h2>
-          <p>From: x{selectedArea.start.x}y{selectedArea.start.y}</p>
-          <p>To: x{selectedArea.end.x}y{selectedArea.end.y}</p>
-          <div>
-            <button className={styles.imageButton} onClick={() => setSelectedOption('color')}>Color</button>
-            <button 
-            className={styles.imageButton}
-              onClick={() => setSelectedOption('image')}
+        <VStack spacing={4} align="stretch">
+          <Heading size="md">Selected Area</Heading>
+          <Flex>
+            <VStack spacing={4} align="stretch" flex="1">
+              <Text>From: x{selectedArea.start.x} y{selectedArea.start.y}</Text>
+              <Text>To: x{selectedArea.end.x} y{selectedArea.end.y}</Text>
+            </VStack>
+            <VStack spacing={4} align="stretch" flex="1">
+              <Text>Pixel Resolution:</Text>
+              <Text>
+                {Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x{' '}
+                {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}
+              </Text>
+            </VStack>
+          </Flex>
+          <Flex>
+            <Button 
+              onClick={() => setSelectedOption('color')} 
+              colorScheme={selectedOption === 'color' ? 'blue' : 'gray'} 
+              mr={2}
+            >
+              Color
+            </Button>
+            <Button 
+              onClick={() => setSelectedOption('image')} 
+              colorScheme={selectedOption === 'image' ? 'blue' : 'gray'} 
               disabled={!isMultiplePixelsSelected}
               title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
             >
               Image
-            </button>
-          </div>
+            </Button>
+          </Flex>
           {selectedOption === 'color' ? (
             <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
           ) : (
             isMultiplePixelsSelected ? (
-              <input type="file" accept="image/*" onChange={handleImageUpload} />
+              <Input type="file" accept="image/*" onChange={handleImageUpload} />
             ) : (
-              <p>Select at least 2x2 pixels to upload an image</p>
+              <Text>Select at least 2x2 pixels to upload an image</Text>
             )
           )}
-        </>
+        </VStack>
       ) : (
-        <p>Select a Pixel or an area on the pixel board</p>
+        <Text>Select a Pixel or an area on the pixel board</Text>
       )}
-      <button 
+      <Button 
         onClick={handleColorPixelButtonClick} 
-        className={styles.buyButton}
-        disabled={connected && !selectedArea}
+        colorScheme="green" 
+        mt={4}
+        isDisabled={connected && !selectedArea}
       >
         {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
-      </button>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-      {success && <p className="text-green-500 mt-4">{success}</p>}
-    </div>
+      </Button>
+      {error && <Text color="red.500" mt={4}>{error}</Text>}
+      {success && <Text color="green.500" mt={4}>{success}</Text>}
+    </Box>
   )
 }
 
