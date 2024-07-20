@@ -171,16 +171,20 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
       {selectedArea ? (
         <VStack spacing={4} align="stretch">
-          <Heading size="md">Selected Area</Heading>
+          <Heading size="md" color="navy" >Selected Area</Heading>
           <Flex justifyContent="space-between">
             <VStack spacing={2} align="stretch">
-              <Text>From: x{selectedArea.start.x}, y{selectedArea.start.y}</Text>
-              <Text>To: x{selectedArea.end.x}, y{selectedArea.end.y}</Text>
+              <Text>
+                From: <Text as="span" fontSize="sm">(x{selectedArea.start.x}, y{selectedArea.start.y})</Text>
+              </Text>
+              <Text>
+                To: <Text as="span" fontSize="sm">(x{selectedArea.end.x}, y{selectedArea.end.y})</Text>
+                </Text>
             </VStack>
-            <Divider orientation="vertical" />
+            <Divider orientation="vertical" mx={1} borderColor="navy" height="auto" />
             <VStack spacing={2} align="stretch">
-              <Text>Pixel Resolution:</Text>
-              <Text>{Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}</Text>
+              <Text>Image Resolution:</Text>
+              <Text fontSize="sm">({Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}) px</Text>
             </VStack>
           </Flex>
           <Flex>
@@ -212,7 +216,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           )}
         </VStack>
       ) : (
-        <Text>Select a Pixel or an area on the pixel board</Text>
+        <Text>Select a Pixel or an area on the board</Text>
       )}
       <Button 
         onClick={handleChangePixelColorButtonClick} 
@@ -223,7 +227,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </Button>
       {selectedOption === 'image' && !isValidImageSelection && (
-        <Text color="red.500" mt={2}>
+        <Text color="red.500" mt={2} fontSize="sm">
           Please select at least a 2x2 area to upload an image. 
           Selections of 1 line or 1 row are not allowed for image uploads.
         </Text>
