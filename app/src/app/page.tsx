@@ -23,9 +23,12 @@ export default function Home() {
       setIsLoading(true);
       try {
         const response = await fetch('/api/pixels');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
         const pixels = await response.json();
-        const newPixelData = pixels.reduce((acc: { [key: string]: { color: string, owner: string } }, pixel: any) => {
-          acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
+        const newPixelData = pixels.reduce((acc: { [key: string]: { color: string, player_pubkey: string } }, pixel: any) => {
+          acc[pixel.address] = { color: pixel.color, player_pubkey: pixel.owner };
           return acc;
         }, {} as { [key: string]: { color: string, owner: string } });
         setPixelData(newPixelData);

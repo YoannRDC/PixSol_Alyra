@@ -4,11 +4,11 @@ import { PixelRepository } from '../repositories/PixelRepository';
 export class PixelService {
   constructor(private repository: PixelRepository) {}
 
-  async buyPixels(pixels: { [key: string]: string }, owner: string): Promise<void> {
-    const pixelsToUpdate = Object.entries(pixels).map(([address, color]) => ({
+  async buyPixels(pixels: { address: string, color: string, player_pubkey: string }[]): Promise<void> {
+    const pixelsToUpdate = pixels.map(({ address, color, player_pubkey }) => ({
       address,
       color,
-      owner
+      player_pubkey
     }));
     await this.repository.updatePixels(pixelsToUpdate);
   }
