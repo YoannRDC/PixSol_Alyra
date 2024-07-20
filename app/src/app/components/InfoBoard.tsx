@@ -153,7 +153,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         });
 
       }
- 
     } else {
       setSelectedOption('image')
     }
@@ -204,16 +203,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           {selectedOption === 'color' ? (
             <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
           ) : (
-            isMultiplePixelsSelected ? (
-              <Input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageUpload} 
-                disabled={!isValidImageSelection}
-              />
-            ) : (
-              <Text>Select at least 2x2 pixels to upload an image</Text>
-            )
+            <Input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+              disabled={!isValidImageSelection}
+            />
           )}
         </VStack>
       ) : (
@@ -223,10 +218,16 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         onClick={handleChangePixelColorButtonClick} 
         colorScheme="green" 
         mt={4}
-        isDisabled={connected && !selectedArea}
+        isDisabled={!connected || !selectedArea}
       >
         {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </Button>
+      {selectedOption === 'image' && !isValidImageSelection && (
+        <Text color="red.500" mt={2}>
+          Please select at least a 2x2 area to upload an image. 
+          Selections of 1 line or 1 row are not allowed for image uploads.
+        </Text>
+      )}
     </Box>
   )
 }
