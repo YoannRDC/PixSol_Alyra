@@ -7,7 +7,9 @@ import PixelBoard from './components/PixelBoard';
 import InfoBoard from './components/InfoBoard';
 import { Box, Heading, Flex } from '@chakra-ui/react';
 
-const BOARD_SIZE = 20; // 20x20 grid
+// WARNING: CHANGE ALSO IN INFO BORAD
+const BOARD_SIZE = 10; // grid size
+
 
 export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)

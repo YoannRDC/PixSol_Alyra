@@ -2,9 +2,14 @@
 
 import React, { useState, useMemo } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } from '@chakra-ui/react'
-import { useMutableDictionary } from '../hooks/useMutableDictionary'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useMutableDictionary } from '../hooks/useMutableDictionary';
+
+// WARNING: CHANGE ALSO IN WITHDRAW PAGE
+const BOARD_SIZE = 10; // grid size
+
 
 interface SelectedArea {
   start: { x: number; y: number }
@@ -37,7 +42,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     const pixels: number[] = []
     for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
       for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-        pixels.push(y * 20 + x)
+        pixels.push(y * BOARD_SIZE + x);
       }
     }
     setPixelIds(pixels)
