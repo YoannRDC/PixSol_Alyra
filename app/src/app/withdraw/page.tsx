@@ -39,7 +39,7 @@ export default function WithDrawPage() {
         const ownerPublicKey = new PublicKey(wallet.publicKey.toBase58());
         const assets = await fetchAssetsByOwner(umi, ownerPublicKey);
 
-        const specificNfts = await Promise.all(assets.map(async (asset) => {
+        const specificNfts = await Promise.all(assets.map(async (asset: { id: string; }) => {
           const isFromTree = await checkAssetInTree(umi, asset.id);
           return isFromTree ? asset : null;
         }));
@@ -67,7 +67,7 @@ export default function WithDrawPage() {
     if (!dictionaryInfo || pixsolNfts.length === 0) return 0;
     return pixsolNfts.reduce((total, nft) => {
       const id = parseInt(nft.content?.metadata?.name);
-      const entry = dictionaryInfo.entries.find(e => e.id === id);
+      const entry = dictionaryInfo.entries.find((e: { id: number; }) => e.id === id);
       return total + (entry ? entry.value * 5000000 : 0);
     }, 0);
   }, [pixsolNfts, dictionaryInfo]);
@@ -128,7 +128,7 @@ export default function WithDrawPage() {
             <ul className="list-disc list-inside">
               {pixsolNfts.map((nft) => {
                 const id = parseInt(nft.content?.metadata?.name);
-                const entry = dictionaryInfo?.entries.find(e => e.id === id);
+                const entry = dictionaryInfo?.entries.find((e: { id: number; }) => e.id === id);
                 const value = entry ? entry.value * 5000000 : 0;
                 return (
                   <li key={nft.id}>
