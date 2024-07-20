@@ -22,15 +22,14 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const [selectedOption, setSelectedOption] = useState<'color' | 'image'>('color')
 
   // Back imports
-  const { 
-    updateByBatch,
-    programInitialized 
-  } = useMutableDictionary();
+  const { updateByBatch, programInitialized } = useMutableDictionary();
   const { connected } = useWallet();
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
   const [batchIds, setBatchIds] = useState<string>('');
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
   const [pixelIds, setPixelIds] = useState<number[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const isMultiplePixelsSelected = useMemo(() => {
 
@@ -68,39 +67,32 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     try {
       const tx = await updateByBatch(ids, batchDepositAmount);
       setUpdateStatus(`Batch update successful. Transaction signature: ${tx}`);
+      setSuccess(`Batch update successful. Transaction signature: ${tx}`);
     } catch (error) {
       console.error('Batch update failed:', error instanceof Error ? error.message : String(error));
       setUpdateStatus(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
+      setError(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
   const handleChangePixelColorButtonClick = async () => {
-
     if (selectedArea) {
-
-      console.log("selectedArea.start.x:", selectedArea.start.x)
-      console.log("selectedArea.start.y:", selectedArea.start.y)
-      console.log("selectedArea.end.x:", selectedArea.end.x)
-      console.log("selectedArea.end.y:", selectedArea.end.y)
-
-      // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
           pixels.push(y * 20 + x);
         }
       }
-      console.error("pixels:", pixels);
 
       const pixelString = pixels.join(',');
-      console.error("pixelString:", pixelString);
       setBatchIds(pixelString);
 
       handleUpdateByBatch();
-      onBuy()
+      onBuy();
     } else {
       const errorMsg = 'Select an Area before Change color.';
       setUpdateStatus(errorMsg);
+      setError(errorMsg);
       console.error(errorMsg);
     }
   }
@@ -160,7 +152,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
         <Text>Select a Pixel or an area on the pixel board</Text>
       )}
       <Button 
-        onClick={handleColorPixelButtonClick} 
+        onClick={handleChangePixelColorButtonClick} 
         colorScheme="green" 
         mt={4}
         isDisabled={connected && !selectedArea}

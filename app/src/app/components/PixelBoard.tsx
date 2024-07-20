@@ -188,6 +188,11 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
           />
         </Box>
       )}
+
+      {/* Pour les gens sur mobiles par la suite
+      Il faut améliorer l'UI, mettre un meilleur bouton 
+      "Confirm Selection" + adapter un zoom pour sélectionner
+      les pixels. */}
   
       {isMobile && (
         <>
