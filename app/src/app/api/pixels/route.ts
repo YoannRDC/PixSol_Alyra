@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import { PixelService } from '../../services/PixelService';
-import { RedisPixelRepository } from './../../repositories/RedisPixelRepository';
-
-const pixelService = new PixelService(new RedisPixelRepository());
+import SingletonPixelService from '../pixelService';
 
 export async function GET() {
   try {
+    const pixelService = SingletonPixelService.getInstance().getPixelService();
     const pixels = await pixelService.getAllPixels();
     return NextResponse.json(pixels);
   } catch (error) {
