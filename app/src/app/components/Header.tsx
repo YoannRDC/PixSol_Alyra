@@ -7,6 +7,8 @@ import { Box, Flex, Heading, HStack, Button, useColorModeValue, useDisclosure, I
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { ClientWalletMultiButton } from "./ClientWalletMultiButton";
 
+// const HEADER_HEIGHT = 80;
+
 const Header: React.FC = () => {
     const bgColor = useColorModeValue('#edf5f7', 'gray.900');
     const textColor = useColorModeValue('gray.800', 'white');
@@ -49,7 +51,7 @@ const Header: React.FC = () => {
                     <NavLink href="/mint" isActive={pathname === "/mint"}>Mint</NavLink>
                     <NavLink href="/lottery" isActive={pathname === "/lottery"}>Lottery</NavLink>
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
-                    <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>Smart Contract Demo</NavLink>
+                    <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>SC Demo</NavLink>
                 </VStack>
             </Collapse>
         </Box>

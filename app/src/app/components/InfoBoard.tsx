@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
-import { Box, Button, Heading, Text, Flex, VStack, Input } from '@chakra-ui/react';
+import { Box, Button, Heading, Text, Flex, VStack, Input, Divider } from '@chakra-ui/react';
 
 // Back needs
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
@@ -97,7 +97,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const handleColorPixelButtonClick = async () => {
 
     if (selectedArea) {
-
       // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
@@ -127,22 +126,21 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     }
   }
 
+
   return (
     <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
       {selectedArea ? (
         <VStack spacing={4} align="stretch">
           <Heading size="md">Selected Area</Heading>
-          <Flex>
-            <VStack spacing={4} align="stretch" flex="1">
+          <Flex justifyContent="space-between">
+            <VStack spacing={2} align="stretch">
               <Text>From: x{selectedArea.start.x} y{selectedArea.start.y}</Text>
               <Text>To: x{selectedArea.end.x} y{selectedArea.end.y}</Text>
             </VStack>
-            <VStack spacing={4} align="stretch" flex="1">
+            <Divider orientation="vertical" />
+            <VStack spacing={2} align="stretch">
               <Text>Pixel Resolution:</Text>
-              <Text>
-                {Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x{' '}
-                {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}
-              </Text>
+              <Text>{Math.abs(selectedArea.end.x - selectedArea.start.x) + 1} x {Math.abs(selectedArea.end.y - selectedArea.start.y) + 1}</Text>
             </VStack>
           </Flex>
           <Flex>

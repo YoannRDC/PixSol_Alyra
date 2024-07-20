@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
-import { Box, Heading, Flex } from '@chakra-ui/react'
-import PixelBoard from './components/PixelBoard'
+import { useState, useCallback, useEffect } from 'react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import PixelBoard from './components/PixelBoard';
+import InfoBoard from './components/InfoBoard';
+import { Box, Heading, Flex } from '@chakra-ui/react';
 
 const BOARD_SIZE = 20; // 20x20 grid
 
@@ -151,10 +152,10 @@ export default function Home() {
   }, [selectedArea, publicKey, connection, pixelData, sendTransaction]);
 
   return (
-    <Box p={5}>
-      <Heading as="h1" size="lg" mb={5}>Pixel Board</Heading>
-      <Flex justify="space-between">
-        <Box className="flex-1 mr-5">
+    <Box className="flex flex-col h-screen p-4">
+      <Heading as="h1" size="lg" className="text-center mb-4">Pixel Board</Heading>
+      <Flex className="flex-1 gap-4">
+        <Box className="flex-1 h-full overflow-hidden">
           <PixelBoard 
             onSelectionChange={handleSelectionChange} 
             pixelData={pixelData} 
@@ -168,5 +169,5 @@ export default function Home() {
         </Box>
       </Flex>
     </Box>
-  )
+  );
 }

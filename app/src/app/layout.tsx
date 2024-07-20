@@ -13,7 +13,7 @@ const ClientWalletProviderComponent = dynamic(
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ margin: 0, height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <ChakraProvider>
           <ClientWalletProviderComponent>
             <AppProvider>

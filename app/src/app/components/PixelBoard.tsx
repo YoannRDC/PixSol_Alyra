@@ -12,6 +12,7 @@ import {
   ModalCloseButton,
   useBreakpointValue,
   Flex,
+  Center,
 } from '@chakra-ui/react'
 import InfoBoard from './InfoBoard'
 
@@ -99,22 +100,22 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      handleSelectionEnd()
+      handleSelectionEnd();
     }
 
-    window.addEventListener('mouseup', handleGlobalMouseUp)
-    window.addEventListener('touchend', handleGlobalMouseUp)
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('touchend', handleGlobalMouseUp);
     return () => {
-      window.removeEventListener('mouseup', handleGlobalMouseUp)
-      window.removeEventListener('touchend', handleGlobalMouseUp)
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchend', handleGlobalMouseUp);
     }
   }, [handleSelectionEnd])
 
   const handleConfirmSelection = useCallback(() => {
     if (selectionStart && selectionEnd) {
-      onSelectionChange({start: selectionStart, end: selectionEnd})
+      onSelectionChange({start: selectionStart, end: selectionEnd});
       if (isMobile) {
-        onOpen()
+        onOpen();
       }
     }
   }, [selectionStart, selectionEnd, onSelectionChange, onOpen, isMobile])
@@ -128,16 +129,16 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
       boxSizing: 'border-box',
       position: 'relative',
       backgroundColor: pixelData[key]?.color || 'white',
-    }
+    };
 
     if (selectionStart && selectionEnd) {
-      const minX = Math.min(selectionStart.x, selectionEnd.x)
-      const maxX = Math.max(selectionStart.x, selectionEnd.x)
-      const minY = Math.min(selectionStart.y, selectionEnd.y)
-      const maxY = Math.max(selectionStart.y, selectionEnd.y)
+      const minX = Math.min(selectionStart.x, selectionEnd.x);
+      const maxX = Math.max(selectionStart.x, selectionEnd.x);
+      const minY = Math.min(selectionStart.y, selectionEnd.y);
+      const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-        pixelStyle.boxShadow = 'inset 0 0 0 2px blue'
+        pixelStyle.boxShadow = 'inset 0 0 0 2px blue';
       }
     }
 
@@ -149,71 +150,74 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   }
 
   return (
-    <VStack spacing={4} align="stretch">
-      <Flex direction={isMobile ? "column" : "row"} alignItems="flex-start">
-        <Box
-          ref={boardRef}
-          width={isMobile ? "100%" : "auto"}
-          height={isMobile ? "auto" : "calc(100vh - 100px)"}
-          maxWidth={isMobile ? "100%" : "calc(100vh - 100px)"}
-          aspectRatio="1 / 1"
-          margin="auto"
-          display="flex"
-          flexWrap="wrap"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-        >
-          {Array.from({ length: boardSize * boardSize }, (_, index) => {
-            const x = index % boardSize
-            const y = Math.floor(index / boardSize)
-            return renderPixel(x, y)
-          })}
+    <Flex 
+      direction={isMobile ? "column" : "row"} 
+      alignItems="flex-start" 
+      width="100%"
+      height="100vh"
+      overflow="hidden"
+    >
+      <Box
+        ref={boardRef}
+        width={isMobile ? "100%" : "calc(100vh - 100px)"}
+        height={isMobile ? "auto" : "calc(100vh - 100px)"}
+        maxWidth={isMobile ? "100%" : "calc(100vh - 100px)"}
+        aspectRatio="1 / 1"
+        margin="0"
+        display="flex"
+        flexWrap="wrap"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        {Array.from({ length: boardSize * boardSize }, (_, index) => {
+          const x = index % boardSize
+          const y = Math.floor(index / boardSize)
+          return renderPixel(x, y)
+        })}
+      </Box>
+      
+      {!isMobile && (
+        <Box width="300px" ml={4} height="calc(100vh - 100px)" overflowY="auto">
+          <InfoBoard
+            selectedArea={selectionStart && selectionEnd ? {start: selectionStart, end: selectionEnd} : null}
+            onColorChange={onColorChange}
+            onImageUpload={onImageUpload}
+            onBuy={onBuy}
+          />
         </Box>
-        {!isMobile && (
-          <Box ml={4} width="300px">
-            <InfoBoard
-              selectedArea={selectionStart && selectionEnd ? {start: selectionStart, end: selectionEnd} : null}
-              onColorChange={onColorChange}
-              onImageUpload={onImageUpload}
-              onBuy={onBuy}
-            />
-          </Box>
-        )}
-      </Flex>
-
-      {isMobile && (
-        <Button onClick={handleConfirmSelection} colorScheme="blue" width="100%" mt={10}>
-          Confirm Selection
-        </Button>
       )}
-
+  
       {isMobile && (
-        <Modal isOpen={isOpen} onClose={onClose} size="full">
-          <ModalOverlay />
-          <ModalContent height="100vh" maxHeight="100vh" margin={0}>
-            <ModalHeader>Customize Selected Pixels</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody 
-              flex={1} 
-              overflowY="auto"
-              display="flex"
-              flexDirection="column"
-            >
-              <Box flex={1} overflowY="auto">
+        <>
+          <Button 
+          onClick={handleConfirmSelection} 
+          colorScheme="blue" 
+          width="80%" 
+          alignContent="center" 
+          ml="10%"
+          mt={10}>
+            Confirm Selection
+          </Button>
+          <Modal isOpen={isOpen} onClose={onClose} size="full">
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Pixel Information</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
                 <InfoBoard
                   selectedArea={selectionStart && selectionEnd ? {start: selectionStart, end: selectionEnd} : null}
                   onColorChange={onColorChange}
                   onImageUpload={onImageUpload}
                   onBuy={onBuy}
                 />
-              </Box>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+              </ModalBody>
+            </ModalContent>
+          </Modal>
+        </>
       )}
-    </VStack>
+    </Flex>
   )
 }
 
