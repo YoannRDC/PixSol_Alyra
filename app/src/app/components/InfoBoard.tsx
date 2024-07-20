@@ -7,6 +7,7 @@ import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } fr
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
 import { walletAdapterIdentity } from '@metaplex-foundation/js'
+import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
 const BOARD_SIZE = 10; // grid size
@@ -76,15 +77,34 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       return
     }
 
+    toast({
+      duration: 5000,
+      isClosable: true,
+      render: () => <SubmittedToast />
+    });
+
     setUpdateStatus('Updating pixels in batch...')
     try {
-      const tx = await updateByBatch(ids, batchDepositAmount)
-      const successMsg = `Batch update successful. Transaction signature: ${tx}`
-      setUpdateStatus(successMsg)
+      const tx = await updateByBatch(ids, batchDepositAmount);
+      const successMsg = `Batch update successful. Transaction signature: ${tx}`;
+      setUpdateStatus(successMsg);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <SuccessToast signature={tx} />
+      });
+
     } catch (error) {
       const errorMsg = `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
       console.error('Batch update failed:', errorMsg)
-      setUpdateStatus(errorMsg)
+      setUpdateStatus(errorMsg);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage={errorMsg} />
+      });
     }
   }
 
