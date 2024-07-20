@@ -4,29 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import styles from '../styles/InfoBoard.module.css'
-
-// Back needs
-import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { 
-  fetchMerkleTree,
-  mintV1, 
-  mplBubblegum,
-  fetchTreeConfigFromSeeds
-} from "@metaplex-foundation/mpl-bubblegum";
-import { 
-  signerIdentity, 
-  transactionBuilder, 
-  publicKey, 
-  Signer, 
-  generateSigner 
-} from '@metaplex-foundation/umi';
-import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
-import { AnchorProvider, Program } from '@project-serum/anchor';
-import * as anchor from "@project-serum/anchor";
-import { confirmTx } from '../utils/helper';
-
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
 
 interface InfoBoardProps {
@@ -46,13 +24,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
   // Back imports
   const { 
-    readDictionaryInfo, 
-    readVaultInfo, 
-    updatePixel, 
-    withdrawAndReset, 
-    updateByBatch, 
-    withdrawAndResetByBatch,
-    isInitializing, 
+    updateByBatch,
     programInitialized 
   } = useMutableDictionary();
   const { connected } = useWallet();
@@ -87,7 +59,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     try {
       const tx = await updateByBatch(ids, batchDepositAmount);
       setUpdateStatus(`Batch update successful. Transaction signature: ${tx}`);
-      await fetchInfo();
     } catch (error) {
       console.error('Batch update failed:', error instanceof Error ? error.message : String(error));
       setUpdateStatus(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -144,7 +115,10 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
             </button>
           </div>
           {selectedOption === 'color' ? (
-            <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
+            <ColorWheel 
+              onChange={color => onColorChange(color.toString('hex'))} 
+              UNSAFE_style={{ width: '150px', height: '150px' }} 
+            />
           ) : (
             isMultiplePixelsSelected ? (
               <input type="file" accept="image/*" onChange={handleImageUpload} />
@@ -165,16 +139,10 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       </button>
       {error && <p className="text-red-500 mt-4">{error}</p>}
       {success && <p className="text-green-500 mt-4">{success}</p>}
+      {updateStatus && <p className="text-green-500 mt-4">{updateStatus}</p>}
     </div>
   )
 }
 
 export default InfoBoard
-
-function setUpdateStatus(arg0: string) {
-  throw new Error('Function not implemented.')
-}
-function fetchInfo() {
-  throw new Error('Function not implemented.')
-}
 
