@@ -2,10 +2,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
-import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import styles from '../styles/InfoBoard.module.css'
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
+
+// WARNING: CHANGE ALSO IN WITHDRAW PAGE
+const BOARD_SIZE = 10; // grid size
 
 interface InfoBoardProps {
   selectedArea: {start: {x: number, y: number}, end: {x: number, y: number}} | null
@@ -38,7 +40,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     const pixels: number[] = [];
     for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
       for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-        pixels.push(y * 20 + x);
+
+        pixels.push(y * BOARD_SIZE + x);
       }
     }
     setPixelIds(pixels);
@@ -48,15 +51,15 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     return width > 1 || height > 1
   }, [selectedArea])
 
-  const handleUpdateByBatch = async () => {
+  const handleUpdateByBatch = async (pixelString: string) => {
     if (!connected || !programInitialized) {
       setUpdateStatus('Please connect your wallet and wait for program initialization.');
       return;
     }
 
-    console.log("batchIds:", batchIds);
-
-    const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    // console.log("batchIds:", batchIds);
+    // const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    const ids = pixelString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
     if (ids.length === 0) {
       setUpdateStatus('Please enter valid pixel IDs for batch update.');
       return;
@@ -85,7 +88,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-          pixels.push(y * 20 + x);
+          pixels.push(y * BOARD_SIZE + x);
         }
       }
       console.error("pixels:", pixels);
@@ -94,7 +97,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       console.error("pixelString:", pixelString);
       setBatchIds(pixelString);
 
-      handleUpdateByBatch();
+      handleUpdateByBatch(pixelString);
  
     } else {
       const errorMsg = 'Select an Area before Change color.';
@@ -114,9 +117,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     <div className={styles.infoBoard}>
       {selectedArea ? (
         <>
-          <h2>Selected Area</h2>
-          <p>From: x{selectedArea.start.x}y{selectedArea.start.y}</p>
-          <p>To: x{selectedArea.end.x}y{selectedArea.end.y}</p>
+          <h2>Selected Area:</h2>
+          <p>From: x{selectedArea.start.x}y{selectedArea.start.y}, To: x{selectedArea.end.x}y{selectedArea.end.y}</p>
           {pixelIds.length > 0 && (
             <div>
               <h3>Pixel IDs:</h3>
