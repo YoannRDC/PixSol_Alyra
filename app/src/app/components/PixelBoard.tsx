@@ -37,11 +37,12 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   onBuy,
   isConnected
 }) => {
-  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null)
-  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null)
-  const [isSelecting, setIsSelecting] = useState(false)
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const boardRef = useRef<HTMLDivElement>(null)
+  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [currentSelection, setCurrentSelection] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const boardRef = useRef<HTMLDivElement>(null);
 
   const isMobile = useBreakpointValue({ base: true, md: false })
 
@@ -61,8 +62,11 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
       setSelectionStart(coords)
       setSelectionEnd(coords)
       setIsSelecting(true)
+
+      setCurrentSelection(null)
+      onSelectionChange(null)
     }
-  }, [getPixelCoordinates])
+  }, [getPixelCoordinates, onSelectionChange])
 
   const handleSelectionMove = useCallback((clientX: number, clientY: number) => {
     if (isSelecting) {
@@ -76,6 +80,8 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   const handleSelectionEnd = useCallback(() => {
     setIsSelecting(false)
     if (selectionStart && selectionEnd) {
+      const newSelection = {start: selectionStart, end: selectionEnd}
+      setCurrentSelection(newSelection)
       onSelectionChange({start: selectionStart, end: selectionEnd})
     }
   }, [selectionStart, selectionEnd, onSelectionChange])
@@ -112,8 +118,8 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   }, [handleSelectionEnd])
 
   const handleConfirmSelection = useCallback(() => {
-    if (selectionStart && selectionEnd) {
-      onSelectionChange({start: selectionStart, end: selectionEnd});
+    if (currentSelection) {
+      onSelectionChange(currentSelection);
       if (isMobile) {
         onOpen();
       }
@@ -131,11 +137,11 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
       backgroundColor: pixelData[key]?.color || 'white',
     };
 
-    if (selectionStart && selectionEnd) {
-      const minX = Math.min(selectionStart.x, selectionEnd.x);
-      const maxX = Math.max(selectionStart.x, selectionEnd.x);
-      const minY = Math.min(selectionStart.y, selectionEnd.y);
-      const maxY = Math.max(selectionStart.y, selectionEnd.y);
+    if (currentSelection) {
+      const minX = Math.min(currentSelection.start.x, currentSelection.end.x);
+      const maxX = Math.max(currentSelection.start.x, currentSelection.end.x);
+      const minY = Math.min(currentSelection.start.y, currentSelection.end.y);
+      const maxY = Math.max(currentSelection.start.y, currentSelection.end.y);
 
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
         pixelStyle.boxShadow = 'inset 0 0 0 2px blue';
@@ -143,7 +149,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
     }
 
     return <Box key={key} style={pixelStyle} />
-  }, [pixelData, boardSize, selectionStart, selectionEnd])
+  }, [pixelData, boardSize, currentSelection])
 
   if (isLoading) {
     return <Box>Loading...</Box>
@@ -181,7 +187,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
       {!isMobile && (
         <Box width="300px" ml={4} height="calc(100vh - 100px)" overflowY="auto">
           <InfoBoard
-            selectedArea={selectionStart && selectionEnd ? {start: selectionStart, end: selectionEnd} : null}
+            selectedArea={currentSelection}
             onColorChange={onColorChange}
             onImageUpload={onImageUpload}
             onBuy={onBuy}
@@ -202,7 +208,9 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
           width="80%" 
           alignContent="center" 
           ml="10%"
-          mt={10}>
+          mt={10}
+          isDisabled={!currentSelection}
+        >
             Confirm Selection
           </Button>
           <Modal isOpen={isOpen} onClose={onClose} size="full">
@@ -212,7 +220,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
               <ModalCloseButton />
               <ModalBody>
                 <InfoBoard
-                  selectedArea={selectionStart && selectionEnd ? {start: selectionStart, end: selectionEnd} : null}
+                  selectedArea={currentSelection}
                   onColorChange={onColorChange}
                   onImageUpload={onImageUpload}
                   onBuy={onBuy}

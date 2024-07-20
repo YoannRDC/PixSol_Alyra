@@ -1,109 +1,132 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
-import { useWalletModal } from '@solana/wallet-adapter-react-ui'
-import { Box, Button, Heading, Text, Flex, VStack, Input, Divider } from '@chakra-ui/react';
+import { useWallet } from '@solana/wallet-adapter-react'
+import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } from '@chakra-ui/react'
+import { useMutableDictionary } from '../hooks/useMutableDictionary'
 
-// Back needs
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useMutableDictionary } from '../hooks/useMutableDictionary';
+interface SelectedArea {
+  start: { x: number; y: number }
+  end: { x: number; y: number }
+}
 
 interface InfoBoardProps {
-  selectedArea: {start: {x: number, y: number}, end: {x: number, y: number}} | null
+  selectedArea: SelectedArea | null
   onColorChange: (color: string) => void
   onImageUpload: (image: File) => void
   onBuy: () => void
 }
 
 const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onImageUpload, onBuy }) => {
-
-  // Front imports
   const [selectedOption, setSelectedOption] = useState<'color' | 'image'>('color')
+  const { updateByBatch, programInitialized } = useMutableDictionary()
+  const { connected } = useWallet()
+  const [updateStatus, setUpdateStatus] = useState<string | null>(null)
+  const [batchIds, setBatchIds] = useState<string>('')
+  const [batchDepositAmount] = useState<number>(20000000)
+  const [pixelIds, setPixelIds] = useState<number[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  // Back imports
-  const { updateByBatch, programInitialized } = useMutableDictionary();
-  const { connected } = useWallet();
-  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
-  const [batchIds, setBatchIds] = useState<string>('');
-  const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
-  const [pixelIds, setPixelIds] = useState<number[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const toast = useToast()
 
   const isMultiplePixelsSelected = useMemo(() => {
-
     if (!selectedArea) return false
     
-    // Display pixel IDs to the Front
-    const pixels: number[] = [];
+    const pixels: number[] = []
     for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
       for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-        pixels.push(y * 20 + x);
+        pixels.push(y * 20 + x)
       }
     }
-    setPixelIds(pixels);
+    setPixelIds(pixels)
 
     const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
     const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
     return width > 1 || height > 1
   }, [selectedArea])
 
+  const isValidImageSelection = useMemo(() => {
+    if (!selectedArea) return false
+    const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
+    const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
+    return width >= 2 && height >= 2 && !(width === 2 && height === 1) && !(width === 1 && height === 2)
+  }, [selectedArea])
+
   const handleUpdateByBatch = async () => {
     if (!connected || !programInitialized) {
-      setUpdateStatus('Please connect your wallet and wait for program initialization.');
-      return;
+      setUpdateStatus('Please connect your wallet and wait for program initialization.')
+      return
     }
 
-    console.log("batchIds:", batchIds);
-
-    const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
     if (ids.length === 0) {
-      setUpdateStatus('Please enter valid pixel IDs for batch update.');
-      return;
+      setUpdateStatus('Please enter valid pixel IDs for batch update.')
+      return
     }
 
-    setUpdateStatus('Updating pixels in batch...');
+    setUpdateStatus('Updating pixels in batch...')
     try {
-      const tx = await updateByBatch(ids, batchDepositAmount);
-      setUpdateStatus(`Batch update successful. Transaction signature: ${tx}`);
-      setSuccess(`Batch update successful. Transaction signature: ${tx}`);
+      const tx = await updateByBatch(ids, batchDepositAmount)
+      const successMsg = `Batch update successful. Transaction signature: ${tx}`
+      setUpdateStatus(successMsg)
+      setSuccess(successMsg)
     } catch (error) {
-      console.error('Batch update failed:', error instanceof Error ? error.message : String(error));
-      setUpdateStatus(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
-      setError(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
+      const errorMsg = `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
+      console.error('Batch update failed:', errorMsg)
+      setUpdateStatus(errorMsg)
+      setError(errorMsg)
     }
-  };
+  }
 
   const handleChangePixelColorButtonClick = async () => {
     if (selectedArea) {
-      const pixels: number[] = [];
-      for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
-        for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-          pixels.push(y * 20 + x);
-        }
+      if (selectedOption === 'image' && !isValidImageSelection) {
+        toast({
+          title: "Invalid Selection for Image",
+          description: "Please select at least 2x2 pixels for image upload. 1x1, 1x2, and 2x1 selections are not allowed for images.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        })
+        return
       }
 
-      const pixelString = pixels.join(',');
-      setBatchIds(pixelString);
+      const pixels = pixelIds
+      const pixelString = pixels.join(',')
+      setBatchIds(pixelString)
 
-      handleUpdateByBatch();
-      onBuy();
+      await handleUpdateByBatch()
+      onBuy()
     } else {
-      const errorMsg = 'Select an Area before Change color.';
-      setUpdateStatus(errorMsg);
-      setError(errorMsg);
-      console.error(errorMsg);
+      const errorMsg = 'Select an Area before Change color.'
+      setUpdateStatus(errorMsg)
+      setError(errorMsg)
+      console.error(errorMsg)
+    }
+  }
+
+  const handleImageButtonClick = () => {
+    if (!isValidImageSelection) {
+      toast({
+        title: "Invalid Selection",
+        description: "Please select at least 2x2 pixels to upload an image.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    } else {
+      setSelectedOption('image')
     }
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file && isMultiplePixelsSelected) {
+    if (file && isValidImageSelection) {
       onImageUpload(file)
     }
   }
-
 
   return (
     <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
@@ -112,8 +135,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           <Heading size="md">Selected Area</Heading>
           <Flex justifyContent="space-between">
             <VStack spacing={2} align="stretch">
-              <Text>From: x{selectedArea.start.x} y{selectedArea.start.y}</Text>
-              <Text>To: x{selectedArea.end.x} y{selectedArea.end.y}</Text>
+              <Text>From: x{selectedArea.start.x}, y{selectedArea.start.y}</Text>
+              <Text>To: x{selectedArea.end.x}, y{selectedArea.end.y}</Text>
             </VStack>
             <Divider orientation="vertical" />
             <VStack spacing={2} align="stretch">
@@ -130,7 +153,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
               Color
             </Button>
             <Button 
-              onClick={() => setSelectedOption('image')} 
+              onClick={handleImageButtonClick} 
               colorScheme={selectedOption === 'image' ? 'blue' : 'gray'} 
               disabled={!isMultiplePixelsSelected}
               title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
@@ -142,7 +165,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
             <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
           ) : (
             isMultiplePixelsSelected ? (
-              <Input type="file" accept="image/*" onChange={handleImageUpload} />
+              <Input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageUpload} 
+                disabled={!isValidImageSelection}
+              />
             ) : (
               <Text>Select at least 2x2 pixels to upload an image</Text>
             )
@@ -166,4 +194,3 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 }
 
 export default InfoBoard
-
