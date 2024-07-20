@@ -2,6 +2,7 @@
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  width: 400px !important;
 }
 
 .buyButton {

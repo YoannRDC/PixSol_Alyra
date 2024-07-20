@@ -6,27 +6,7 @@ import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Box, Button, Heading, Text, Flex, VStack, Input, Divider } from '@chakra-ui/react';
 
 // Back needs
-import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { 
-  fetchMerkleTree,
-  mintV1, 
-  mplBubblegum,
-  fetchTreeConfigFromSeeds
-} from "@metaplex-foundation/mpl-bubblegum";
-import { 
-  signerIdentity, 
-  transactionBuilder, 
-  publicKey, 
-  Signer, 
-  generateSigner 
-} from '@metaplex-foundation/umi';
-import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
-import { AnchorProvider, Program } from '@project-serum/anchor';
-import * as anchor from "@project-serum/anchor";
-import { confirmTx } from '../utils/helper';
-
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
 
 interface InfoBoardProps {
@@ -39,33 +19,32 @@ interface InfoBoardProps {
 const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onImageUpload, onBuy }) => {
 
   // Front imports
-  const { setVisible } = useWalletModal()
   const [selectedOption, setSelectedOption] = useState<'color' | 'image'>('color')
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Back imports
   const { 
-    readDictionaryInfo, 
-    readVaultInfo, 
-    updatePixel, 
-    withdrawAndReset, 
-    updateByBatch, 
-    withdrawAndResetByBatch,
-    isInitializing, 
+    updateByBatch,
     programInitialized 
   } = useMutableDictionary();
   const { connected } = useWallet();
-  const [dictionaryInfo, setDictionaryInfo] = useState<any>(null);
-  const [vaultInfo, setVaultInfo] = useState<any>(null);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
-  const [pixelId, setPixelId] = useState<number>(0);
-  const [depositAmount, setDepositAmount] = useState<number>(10000000); // 0.01 SOL in lamports
   const [batchIds, setBatchIds] = useState<string>('');
   const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
+  const [pixelIds, setPixelIds] = useState<number[]>([]);
 
   const isMultiplePixelsSelected = useMemo(() => {
+
     if (!selectedArea) return false
+    
+    // Display pixel IDs to the Front
+    const pixels: number[] = [];
+    for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
+      for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
+        pixels.push(y * 20 + x);
+      }
+    }
+    setPixelIds(pixels);
+
     const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
     const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
     return width > 1 || height > 1
@@ -77,6 +56,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       return;
     }
 
+    console.log("batchIds:", batchIds);
+
     const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
     if (ids.length === 0) {
       setUpdateStatus('Please enter valid pixel IDs for batch update.');
@@ -87,34 +68,39 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     try {
       const tx = await updateByBatch(ids, batchDepositAmount);
       setUpdateStatus(`Batch update successful. Transaction signature: ${tx}`);
-      await fetchInfo();
     } catch (error) {
       console.error('Batch update failed:', error instanceof Error ? error.message : String(error));
       setUpdateStatus(`Batch update failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
-  const handleColorPixelButtonClick = async () => {
+  const handleChangePixelColorButtonClick = async () => {
 
     if (selectedArea) {
+
+      console.log("selectedArea.start.x:", selectedArea.start.x)
+      console.log("selectedArea.start.y:", selectedArea.start.y)
+      console.log("selectedArea.end.x:", selectedArea.end.x)
+      console.log("selectedArea.end.y:", selectedArea.end.y)
+
       // Convert the pixel selection Position to ids. 
       const pixels: number[] = [];
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-          pixels.push(y * 20 + x + 1);
+          pixels.push(y * 20 + x);
         }
       }
-      console.log('Selected pixels:', pixels);
-      console.log('Selected pixels (json):', JSON.stringify(pixels));
-      setBatchIds(JSON.stringify(pixels));
+      console.error("pixels:", pixels);
 
-      // setBatchDepositAmount(); // Default values are fine.
-      console.log('BatchDepositAmount:', JSON.stringify(batchDepositAmount) );
+      const pixelString = pixels.join(',');
+      console.error("pixelString:", pixelString);
+      setBatchIds(pixelString);
+
       handleUpdateByBatch();
       onBuy()
     } else {
       const errorMsg = 'Select an Area before Change color.';
-      setError(errorMsg);
+      setUpdateStatus(errorMsg);
       console.error(errorMsg);
     }
   }
@@ -188,11 +174,4 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 }
 
 export default InfoBoard
-
-function setUpdateStatus(arg0: string) {
-  throw new Error('Function not implemented.')
-}
-function fetchInfo() {
-  throw new Error('Function not implemented.')
-}
 
