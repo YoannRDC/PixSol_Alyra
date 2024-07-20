@@ -4,9 +4,14 @@
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
   "dependencies": {
+    "@chakra-ui/next-js": "^2.2.0",
+    "@chakra-ui/react": "^2.8.2",
     "@coral-xyz/anchor": "^0.30.0",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
     "@solana/spl-token": "^0.4.8",
-    "create-solana-dapp": "^3.0.1"
+    "create-solana-dapp": "^3.0.1",
+    "framer-motion": "^11.3.8"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
