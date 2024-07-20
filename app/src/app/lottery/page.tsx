@@ -27,6 +27,7 @@ const BOARD_SIZE = 20; // 20x20 grid
 
 export default function Home() {
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
+  const [pixelOwners, setPixelOwners] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true)
   const { connection } = useConnection()
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,7 @@ export default function Home() {
   const [umi, setUmi] = useState<any>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [shouldMint, setShouldMint] = useState(false);
+  const [winnerWallet, setWinnerWallet] = useState<string | null>(null);
 
   useEffect(() => {
     if (wallet.connected && wallet.publicKey) {
@@ -60,6 +62,10 @@ export default function Home() {
           return acc;
         }, {} as { [key: string]: { color: string, owner: string } });
         setPixelData(newPixelData);
+        
+        // Extract unique owners
+        const owners = [...new Set(pixels.map((pixel: any) => pixel.owner)) as any];
+        setPixelOwners(owners);
       } catch (error) {
         console.error('Error loading pixel data:', error);
       } finally {
@@ -104,8 +110,8 @@ export default function Home() {
   };
 
   const handleMint = async () => {
-    if (!wallet.connected || !wallet.publicKey || !umi) {
-      setError('Please connect your wallet first.');
+    if (!wallet.connected || !wallet.publicKey || !umi || pixelOwners.length === 0) {
+      setError('Please connect your wallet and ensure pixel data is loaded.');
       return;
     }
 
@@ -122,9 +128,12 @@ export default function Home() {
 
       console.log('Tree Config:', treeConfig);
       
+      // Randomly select a pixel owner
+      const randomOwner = pixelOwners[Math.floor(Math.random() * pixelOwners.length)];
+      setWinnerWallet(randomOwner);
       const tx = transactionBuilder()
         .add(mintV1(umi, {
-          leafOwner: createPublicKey(wallet.publicKey.toBase58()),
+          leafOwner: createPublicKey(randomOwner),
           merkleTree: createPublicKey(merkleTreePublicKey.toBase58()),
           metadata: {
             name: 'NFT FOR DAO',
@@ -173,7 +182,16 @@ export default function Home() {
         <p>No image to display, please save board first</p>
       )}
       {error && <p className={styles.error}>{error}</p>}
-      {assetId && <p className={styles.success}>Transaction ID: {assetId}</p>}
+      {assetId && (
+        <div>
+          <p className={styles.success}>Transaction ID: {assetId}</p>
+          {winnerWallet && (
+            <p className={styles.winner}>
+              Winner Wallet: {winnerWallet.slice(0, 4)}...{winnerWallet.slice(-4)}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
