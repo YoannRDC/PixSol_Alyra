@@ -105,16 +105,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
           pixels.push(y * 20 + x + 1);
         }
       }
-      console.log('Selected pixels:', pixels);
-      console.log('Selected pixels (json):', JSON.stringify(pixels));
-      setBatchIds(JSON.stringify(pixels));
 
-      // setBatchDepositAmount(); // Default values are fine.
-      console.log('BatchDepositAmount:', JSON.stringify(batchDepositAmount) );
+      const pixelString = pixels.join(',');
+      setBatchIds(pixelString);
 
       handleUpdateByBatch();
-
-      onBuy()
+ 
     } else {
       const errorMsg = 'Select an Area before Change color.';
       setError(errorMsg);
