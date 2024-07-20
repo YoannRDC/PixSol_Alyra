@@ -1,14 +1,46 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import {SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
-import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast } from '@chakra-ui/react';
+import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast, Grid, Image } from '@chakra-ui/react';
+
+interface NFT {
+  id: string;
+  name: string;
+  image: string;
+}
 
 export default function MintPage() {
   const { publicKey, connected } = useWallet();
   const [isMinting, setIsMinting] = useState(false);
   const [mintResult, setMintResult] = useState<string | null>(null);
+  const [nfts, setNfts] = useState<NFT[]>([]);
+  const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
   const toast = useToast();
+
+  useEffect(() => {
+    if (connected && publicKey) {
+      fetchNFTs();
+    }
+  }, [connected, publicKey]);
+
+  const fetchNFTs = async () => {
+    if (!publicKey) return;
+
+    setIsLoadingNFTs(true);
+    try {
+      const response = await fetch(`/api/get-nfts?address=${publicKey.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch NFTs');
+      }
+      const data = await response.json();
+      setNfts(data.nfts);
+    } catch (error) {
+      console.error('Error fetching NFTs:', error);
+    } finally {
+      setIsLoadingNFTs(false);
+    }
+  };
 
   const handleMint = async () => {
     if (!publicKey) return;
@@ -16,15 +48,13 @@ export default function MintPage() {
     setIsMinting(true);
     setMintResult(null);
 
-    try {
+    toast({
+      duration: 5000,
+      isClosable: true,
+      render: () => <SubmittedToast />
+    });
 
-      toast({
-        title: 'Transaction Submitted',
-        description: 'Your transaction is being processed.',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-      });
+    try {
 
       const response = await fetch('/api/mint-nft', {
         method: 'POST',
@@ -39,10 +69,14 @@ export default function MintPage() {
       if (!response.ok) {
         throw new Error('Minting failed');
       }
-      
-
       setMintResult(`NFT minted successfully! MintNumber: ${JSON.stringify(data.mintNumber)}, signature: ${JSON.stringify(data.signature)}`);
-      <SuccessToast signature={data.signature} />
+      
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <SuccessToast signature={data.signature} />
+      });
+
     } catch (error) {
       console.error('Minting error:', error);
       setMintResult('Minting failed. Please try again.');
@@ -52,7 +86,13 @@ export default function MintPage() {
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
-      <ErrorToast />
+      
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage={errorMessage} />
+      });
+
     } finally {
       setIsMinting(false);
     }
@@ -89,9 +129,26 @@ export default function MintPage() {
             </Box>
           </TabPanel>
           <TabPanel>
-            <Box className="p-6">
+          <Box className="p-6">
               <Text fontSize="2xl" className="mb-4 font-bold text-gray-800">My Collection</Text>
-              <Text className="text-gray-600">Your NFT collection will be displayed here.</Text>
+              {!connected ? (
+                <Text className="text-red-500">Please connect your wallet to view your collection.</Text>
+              ) : isLoadingNFTs ? (
+                <Text>Loading your NFTs...</Text>
+              ) : nfts.length === 0 ? (
+                <Text>You don't have any NFTs in your collection yet.</Text>
+              ) : (
+                <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
+                  {nfts.map((nft) => (
+                    <Box key={nft.id} borderWidth="1px" borderRadius="lg" overflow="hidden">
+                      <Image src={nft.image} alt={nft.name} />
+                      <Box p="6">
+                        <Text fontWeight="semibold">{nft.name}</Text>
+                      </Box>
+                    </Box>
+                  ))}
+                </Grid>
+              )}
             </Box>
           </TabPanel>
         </TabPanels>
