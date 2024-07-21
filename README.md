@@ -36,7 +36,6 @@ cd app
 npm install
 cd ../program
 anchor build
-anchor deploy
 
 ```
 
@@ -54,11 +53,9 @@ npm run dev
 
 ## Smart Contracts
 
-Nos smart contracts sont écrits en Rust en utilisant le framework Anchor.
+Notre Smart Contract est écrit en Rust en utilisant le framework Anchor.
 
 - **mutable_dictionary.rs**: Ce programme gère un dictionnaire mutable contenant 100 entrées, chacune avec un ID et une valeur. Il permet de lire, mettre à jour, déposer des lamports dans un coffre et retirer des valeurs en fonction des entrées du dictionnaire. Les fonctions incluses gèrent ces opérations de manière simple et en lot, tout en assurant la validation et la gestion des erreurs. [Lien Explorer](https://explorer.solana.com/address/6FBQBJE6pFaRq6iPMc2HN6rRq7TCtzWqLBv7za9BNvtU?cluster=devnet)
-
-- **governance.rs**: Ce programme gère un tableau de pixels où chaque pixel peut être suivi pour la propriété. Il inclut des fonctions pour initialiser le tableau, le mettre à jour avec de nouveaux pixels possédés et vérifier si des pixels spécifiques sont possédés. [Lien Explorer](https://explorer.solana.com/address/9C6m91JP9san9xyZFurePehJvRdBuT2JScMuE6cZeJe9?cluster=devnet)
 
 ## Tests
 
