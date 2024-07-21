@@ -1,5 +1,5 @@
 //Un essai...
-
+/*
 
 import { NextResponse } from 'next/server';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
@@ -30,11 +30,14 @@ if (!SOLANA_RPC_URL) {
 
 const umi: Umi = createUmi(SOLANA_RPC_URL).use(dasApi());
 
-async function fetchAssetsByOwner(owner: string) {
-    return umi.rpc.getAssetsByOwner({ owner: publicKey(owner) });
-}
+const fetchAssetsByOwner = async (umi: any, ownerPublicKey: PublicKey) => {
+    const { items } = await umi.rpc.getAssetsByOwner({
+      owner: publicKey(ownerPublicKey.toBase58()),
+    });
+    return items;
+  };
 
-export async function GET(req: Request) {
+  export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const address = searchParams.get('address');
 
@@ -45,14 +48,14 @@ export async function GET(req: Request) {
     try {
         const ownerPublicKey = publicKey(address);
         // Fetching assets for owner
-        const assets = await fetchAssetsByCreator(umi, ownerPublicKey);
+        const assets = await fetchAssetsByOwner(umi, ownerPublicKey);
 
-        const nfts = assets.items.map((asset: Metadata) => ({
-            name: asset.name,
-            uri: asset.uri,
-            sellerFeeBasisPoints: asset.sellerFeeBasisPoints,
-            collection: asset.collection,
-            creators: asset.creators,
+        const nfts = assets.map((asset: any) => ({
+            name: asset.content.metadata.name,
+            uri: asset.content.metadata.uri,
+            sellerFeeBasisPoints: asset.content.sellerFeeBasisPoints,
+            collection: asset.content.collection,
+            creators: asset.content.creators,
         }));
 
         return NextResponse.json({ nfts }, { status: 200 });
@@ -61,3 +64,4 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Failed to fetch NFTs' }, { status: 500 });
     }
 }
+*/

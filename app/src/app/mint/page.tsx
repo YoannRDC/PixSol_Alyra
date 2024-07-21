@@ -1,22 +1,22 @@
 'use client'
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import {SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
-import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast, Grid, Image } from '@chakra-ui/react';
+import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast } from '@chakra-ui/react';
 
-interface NFT {
-  name: string;
-  image: string;
-}
-interface QuickNodeNFTResponse {
-  jsonrpc: string;
-  id: number;
-  result: Array<{
-    name: string;
-    image: string;
-  }>;
-}
+// interface NFT {
+//   name: string;
+//   image: string;
+// }
+// interface QuickNodeNFTResponse {
+//   jsonrpc: string;
+//   id: number;
+//   result: Array<{
+//     name: string;
+//     image: string;
+//   }>;
+// }
 
 interface MintResponse {
   mintNumber: string;
@@ -27,64 +27,63 @@ export default function MintPage() {
   const { publicKey, connected } = useWallet();
   const [isMinting, setIsMinting] = useState(false);
   const [mintResult, setMintResult] = useState<string | null>(null);
-  const [nfts, setNfts] = useState<NFT[]>([]);
-  const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
+  // const [nfts, setNfts] = useState<NFT[]>([]);
+  // const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
   const toast = useToast();
 
-  const COLLECTION_ADDRESS = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
+  // const COLLECTION_ADDRESS = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
 
-  useEffect(() => {
-    if (connected && publicKey) {
-      fetchNFTs();
-    }
-  }, [connected, publicKey]);
+  // useEffect(() => {
+  //   if (connected && publicKey) {
+  //     fetchNFTs();
+  //   }
+  // }, [connected, publicKey]);
 
-  const fetchNFTs = async () => {
-    setIsLoadingNFTs(true);
-    try {
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      const data = {
-        jsonrpc: "2.0",
-        id: 1,
-        method: "qn_fetchNFTsByCollection",
-        params: [
-          {
-            collection: COLLECTION_ADDRESS,
-            page: 1,
-            perPage: 10, // You can adjust this number
-          },
-        ],
-      };
+  // const fetchNFTs = async () => {
+  //   setIsLoadingNFTs(true);
+  //   try {
+  //     const config = {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     };
+  //     const data = {
+  //       jsonrpc: "2.0",
+  //       id: 1,
+  //       method: "qn_fetchNFTsByCollection",
+  //       params: [
+  //         {
+  //           collection: COLLECTION_ADDRESS,
+  //           page: 1,
+  //           perPage: 10, // You can adjust this number
+  //         },
+  //       ],
+  //     };
 
-      const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
-        process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
-        data,
-        config
-      );
+  //     const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
+  //       process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
+  //       data,
+  //       config
+  //     );
       
-      if (response.data && response.data.result && response.data.result.nfts) {
-        setNfts(response.data.result.nfts);
-      } else {
-        throw new Error('Failed to fetch NFTs');
-      }
-    } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch NFTs. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoadingNFTs(false);
-    }
-  };
-
+  //     if (response.data && response.data.result && response.data.result.nfts) {
+  //       setNfts(response.data.result.nfts);
+  //     } else {
+  //       throw new Error('Failed to fetch NFTs');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching NFTs:', error);
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to fetch NFTs. Please try again.",
+  //       status: "error",
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+  //   } finally {
+  //     setIsLoadingNFTs(false);
+  //   }
+  // };
 
   const handleMint = async () => {
     if (!publicKey) return;
@@ -99,7 +98,6 @@ export default function MintPage() {
     });
 
     try {
-
       const response = await fetch('/api/mint-nft', {
         method: 'POST',
         headers: {
@@ -147,7 +145,7 @@ export default function MintPage() {
       <Tabs variant="enclosed" className="bg-gray-100 rounded-lg shadow-md">
         <TabList className="bg-white border-b border-gray-200">
           <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Mint NFT</Tab>
-          <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Collection NFTs</Tab>
+          {/* <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Collection NFTs</Tab> */}
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -172,7 +170,7 @@ export default function MintPage() {
               {mintResult && <Text className="mt-4 text-green-600">{mintResult}</Text>}
             </Box>
           </TabPanel>
-          <TabPanel>
+          {/* <TabPanel>
             <Box className="p-6">
               <Text fontSize="2xl" className="mb-4 font-bold text-gray-800">Collection NFTs</Text>
               {!connected ? (
@@ -194,7 +192,7 @@ export default function MintPage() {
                 </Grid>
               )}
             </Box>
-          </TabPanel>
+          </TabPanel> */}
         </TabPanels>
       </Tabs>
     </Box>
