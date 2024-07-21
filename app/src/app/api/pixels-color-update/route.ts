@@ -6,12 +6,22 @@ export async function POST(request: NextRequest) {
     const { pixels, player_pubkey } = await request.json();
     const pixelService = SingletonPixelService.getInstance().getPixelService();
     await pixelService.buyPixels(pixels, player_pubkey);
-    return NextResponse.json({ message: 'Pixels bought successfully' });
+
+    const response = NextResponse.json({ message: 'Pixels bought successfully' });
+    
+    // Add cache control headers
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    return response;
+
   } catch (error) {
     console.error('Error buying pixels:', error);
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { message: 'Error buying pixels', error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
+    
+    // Add cache control headers to error response as well
+    errorResponse.headers.set('Cache-Control', 'no-store, max-age=0');
+    return errorResponse;
   }
 }
