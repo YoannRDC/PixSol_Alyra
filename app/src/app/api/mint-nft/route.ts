@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       collectionAuthority: signer,
       metadata: {
         name: `${nextMintCount}`,
-        uri: `https://lh3.googleusercontent.com/FGm4fXMK3ARExpBT4grq_ZZGuwKMjcovM_Kq2qFkvzpJJVcNFOmOL2mSHFOJprK5Mc0bwXTx2x409_g_0gH7E_KICIfCaPhHl_M`,
+        uri: `ipfs://bafybeia3wuho4sfnks5vvd76qbbnnd5yqr2zoeiriskrlowzgjb5fqeuie/`,
         sellerFeeBasisPoints: 500,
         collection: { key: publicKey(COLLECTION_MINT), verified: true },
         creators: [{ address: signer.publicKey, verified: true, share: 100 }],
