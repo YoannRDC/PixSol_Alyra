@@ -12,16 +12,16 @@ interface NFT {
 interface QuickNodeNFTResponse {
   jsonrpc: string;
   id: number;
-  result: Array<{
-    name: string;
-    image: string;
-  }>;
+  result: {
+    nfts?: Array<NFT>;
+    assets?: Array<NFT>;
+  } | Array<NFT>;
 }
 
-interface MintResponse {
-  mintNumber: string;
-  signature: string;
-}
+// interface MintResponse {
+//   mintNumber: string;
+//   signature: string;
+// }
 
 export default function MintPage() {
   const { publicKey, connected } = useWallet();
@@ -55,29 +55,66 @@ export default function MintPage() {
           {
             collection: COLLECTION_ADDRESS,
             page: 1,
-            perPage: 10, // You can adjust this number
+            perPage: 50, 
           },
         ],
       };
 
-      const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
+      console.log('Fetching NFTs with params:', JSON.stringify(data));
+
+      // const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
+      //   process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
+      //   data,
+      //   config
+      // );
+      const response = await axios.post<QuickNodeNFTResponse>(
         process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
         data,
         config
       );
+
+      console.log('QuickNode API Response:', JSON.stringify(response.data));
       
-      if (response.data && response.data.result && response.data.result.nfts) {
-        setNfts(response.data.result.nfts);
+      let fetchedNFTs: Array<NFT> = [];
+
+      if (response.data && response.data.result) {
+        if (Array.isArray(response.data.result)) {
+          fetchedNFTs = response.data.result;
+        } else if (response.data.result.nfts) {
+          fetchedNFTs = response.data.result.nfts;
+        } else if (response.data.result.assets) {
+          fetchedNFTs = response.data.result.assets;
+        } else {
+          console.error('Unexpected result structure:', JSON.stringify(response.data.result));
+          throw new Error('Failed to fetch NFTs: Unexpected result structure');
+        }
+
+        setNfts(fetchedNFTs);
+        console.log(`Successfully fetched ${fetchedNFTs.length} NFTs`);
       } else {
-        throw new Error('Failed to fetch NFTs');
+        console.error('Invalid response structure:', JSON.stringify(response.data));
+        throw new Error('Failed to fetch NFTs: Invalid response structure');
       }
     } catch (error) {
-      console.error('Error fetching NFTs:', error);
+      let errorMessage = 'Failed to fetch NFTs. Please try again.';
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error:', error.message);
+        console.error('Axios error config:', JSON.stringify(error.config));
+        console.error('Axios error response:', error.response ? JSON.stringify(error.response.data) : 'No response');
+        errorMessage += ` Axios Error: ${error.message}`;
+      } else if (error instanceof Error) {
+        console.error('Error fetching NFTs:', error.message);
+        console.error('Error stack:', error.stack);
+        errorMessage += ` Error: ${error.message}`;
+      } else {
+        console.error('Unknown error type:', error);
+        errorMessage += ' Unknown error occurred.';
+      }
       toast({
         title: "Error",
-        description: "Failed to fetch NFTs. Please try again.",
+        description: errorMessage,
         status: "error",
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {
