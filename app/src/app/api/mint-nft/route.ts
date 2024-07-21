@@ -27,7 +27,8 @@ const signer = createSignerFromKeypair(umi, keypair);
 
 umi.use(signerIdentity(signer));
 
-const mintCountPath = path.join(process.cwd(), 'public', 'mintCount.json');
+// const mintCountPath = path.join(process.cwd(), 'public', 'mintCount.json');
+const mintCountPath = 2000;
 
 function getMintCount(): number {
   try {
@@ -57,7 +58,8 @@ export async function POST(req: Request) {
   const { userPublicKey } = await req.json();
 
   try {
-    const currentMintCount = getMintCount();
+    const currentMintCount = 2000;
+    //const currentMintCount = getMintCount();
     const nextMintCount = currentMintCount + 1;
 
     const mintResult = await mintToCollectionV1(umi, {
@@ -75,7 +77,7 @@ export async function POST(req: Request) {
     }).sendAndConfirm(umi);
 
     // If we reach this point, the minting was successful
-    incrementMintCount(nextMintCount);
+    // incrementMintCount(nextMintCount);
     const signatureSerialze = base58.deserialize(mintResult.signature);
     return NextResponse.json({ message: 'NFT minted successfully', signature: signatureSerialze, mintNumber: nextMintCount }, { status: 200 });
   } catch (error) {
