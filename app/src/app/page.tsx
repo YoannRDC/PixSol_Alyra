@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic"
 // WARNING: CHANGE ALSO IN INFO BORAD
 const BOARD_SIZE = 10; // grid size
 
-
 export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
