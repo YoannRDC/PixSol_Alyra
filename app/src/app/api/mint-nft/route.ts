@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
 import { createSignerFromKeypair, signerIdentity, publicKey } from '@metaplex-foundation/umi';
-import { mintToCollectionV1, } from '@metaplex-foundation/mpl-bubblegum';
-import fs from 'fs';
-import path from 'path';
+import { mintToCollectionV1 } from '@metaplex-foundation/mpl-bubblegum';
 import { base58 } from '@metaplex-foundation/umi/serializers';
+
+export const dynamic = "force-dynamic";
 
 // Environment variables
 const SOLANA_RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL as string;
@@ -18,36 +18,13 @@ if (!SOLANA_RPC_URL || !PRIVATE_KEY || !COLLECTION_MINT || !MERKLE_TREE) {
 }
 
 const umi = createUmi(SOLANA_RPC_URL).use(mplBubblegum());
-let arraykey = JSON.parse(PRIVATE_KEY)
-// Directly create the keypair from the private key string
-const privateKeyUint8Array = new Uint8Array(arraykey); 
+let arraykey = JSON.parse(PRIVATE_KEY);
+const privateKeyUint8Array = new Uint8Array(arraykey);
 
 const keypair = umi.eddsa.createKeypairFromSecretKey(privateKeyUint8Array);
 const signer = createSignerFromKeypair(umi, keypair);
 
 umi.use(signerIdentity(signer));
-
-// const mintCountPath = path.join(process.cwd(), 'public', 'mintCount.json');
-const mintCountPath = 2000;
-
-function getMintCount(): number {
-  try {
-    const data = JSON.parse(fs.readFileSync(mintCountPath, 'utf8'));
-    return data.count;
-  } catch (error) {
-    console.error('Error reading mint count file:', error);
-    throw new Error('Failed to read mint count');
-  }
-}
-
-function incrementMintCount(count: number): void {
-  try {
-    fs.writeFileSync(mintCountPath, JSON.stringify({ count }, null, 2));
-  } catch (error) {
-    console.error('Error writing mint count file:', error);
-    throw new Error('Failed to write mint count');
-  }
-}
 
 // Named export for the POST method
 export async function POST(req: Request) {
@@ -58,9 +35,11 @@ export async function POST(req: Request) {
   const { userPublicKey } = await req.json();
 
   try {
-    const currentMintCount = 2000;
-    //const currentMintCount = getMintCount();
-    const nextMintCount = currentMintCount + 1;
+    const { default: SingletonPixelService } = await import('../pixelService');
+    const pixelService = SingletonPixelService.getInstance().getPixelService();
+
+    const currentMintCount = await pixelService.getMintCount();
+    const nextMintCount = await pixelService.incrementMintCount();
 
     const mintResult = await mintToCollectionV1(umi, {
       leafOwner: publicKey(userPublicKey),
@@ -76,12 +55,21 @@ export async function POST(req: Request) {
       },
     }).sendAndConfirm(umi);
 
-    // If we reach this point, the minting was successful
-    // incrementMintCount(nextMintCount);
-    const signatureSerialze = base58.deserialize(mintResult.signature);
-    return NextResponse.json({ message: 'NFT minted successfully', signature: signatureSerialze, mintNumber: nextMintCount }, { status: 200 });
+    const signatureSerialize = base58.deserialize(mintResult.signature);
+    return NextResponse.json({ 
+      message: 'NFT minted successfully', 
+      signature: signatureSerialize, 
+      mintNumber: nextMintCount,
+      previousMintCount: currentMintCount
+    }, { status: 200 });
   } catch (error) {
     console.error('Minting error:', error);
-    return NextResponse.json({ error: 'Failed to mint NFT' }, { status: 500 });
+    let errorMessage: string;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else {
+      errorMessage = String(error);
+    }
+    return NextResponse.json({ error: 'Failed to mint NFT', details: errorMessage }, { status: 500 });
   }
 }
