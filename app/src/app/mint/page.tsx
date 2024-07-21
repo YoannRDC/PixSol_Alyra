@@ -1,91 +1,84 @@
-'use client'
+'use client';
 import axios from "axios";
-import { useState, useEffect } from 'react';
+//import WebSocket from 'ws';
+//import dotenv from 'dotenv';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import {SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
+import { SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
 import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast } from '@chakra-ui/react';
 
-// interface NFT {
-//   name: string;
-//   image: string;
-// }
-// interface QuickNodeNFTResponse {
-//   jsonrpc: string;
-//   id: number;
-//   result: Array<{
-//     name: string;
-//     image: string;
-//   }>;
-// }
+// Constants
+const LAMPORTS_PER_SOL = 1_000_000;
 
-// interface MintResponse {
-//   mintNumber: string;
-//   signature: string;
-// }
+// Interfaces
+interface WalletRequests {
+    [key: number]: string;
+}
+
+interface WalletSubscriptions {
+    [key: number]: string;
+}
+
+interface WalletTransactions {
+    wallet: string;
+    sols: number;
+    timestamp: number;
+}
+
+interface TokenAccounts {
+    [key: string]: string; // name - address
+}
+
+// Store the mapping between the wallet and the listeners id.
+const walletRequests: WalletRequests = {};
+let currentRequestId = 1;
+
+// Store the mapping between the wallet and its subscription id.
+const walletSubscriptions: WalletSubscriptions = {};
+
+// Store the mapping between the wallet and its subscription id.
+const walletTransactions: WalletTransactions[] = [];
+
+// Token accounts to follow.
+const tokenAccounts: TokenAccounts = {};
+
+function subscribeToAccount(ws: any, account: any) {
+  const requestData = {
+      "jsonrpc": "2.0",
+      "id": currentRequestId,
+      "method": "accountSubscribe",
+      "params": [
+          account,
+          {
+              "encoding": "jsonParsed",
+              "commitment": "confirmed"
+          }
+      ]
+  };
+  walletRequests[currentRequestId] = account;
+  currentRequestId++;
+  ws.send(JSON.stringify(requestData));
+}
 
 export default function MintPage() {
   const { publicKey, connected } = useWallet();
   const [isMinting, setIsMinting] = useState(false);
   const [mintResult, setMintResult] = useState<string | null>(null);
-  // const [nfts, setNfts] = useState<NFT[]>([]);
-  // const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
+  const [webSocketMsg, setWebSocketMsg] = useState<string | null>(null);
   const toast = useToast();
+  const hasLaunchedWSS = useRef(false);
 
-  // const COLLECTION_ADDRESS = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
-
-  // useEffect(() => {
-  //   if (connected && publicKey) {
-  //     fetchNFTs();
-  //   }
-  // }, [connected, publicKey]);
-
-  // const fetchNFTs = async () => {
-  //   setIsLoadingNFTs(true);
-  //   try {
-  //     const config = {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     };
-  //     const data = {
-  //       jsonrpc: "2.0",
-  //       id: 1,
-  //       method: "qn_fetchNFTsByCollection",
-  //       params: [
-  //         {
-  //           collection: COLLECTION_ADDRESS,
-  //           page: 1,
-  //           perPage: 10, // You can adjust this number
-  //         },
-  //       ],
-  //     };
-
-  //     const response: AxiosResponse<QuickNodeNFTResponse> = await axios.post(
-  //       process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL || '',
-  //       data,
-  //       config
-  //     );
-      
-  //     if (response.data && response.data.result && response.data.result.nfts) {
-  //       setNfts(response.data.result.nfts);
-  //     } else {
-  //       throw new Error('Failed to fetch NFTs');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching NFTs:', error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to fetch NFTs. Please try again.",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   } finally {
-  //     setIsLoadingNFTs(false);
-  //   }
-  // };
+  useEffect(() => {
+    if (!hasLaunchedWSS.current) {
+      // Launch WebSocket connection
+      launchWSS();
+      hasLaunchedWSS.current = true;
+    }
+  }, []);
 
   const handleMint = async () => {
+    console.log("handleMint ...");
+
     if (!publicKey) return;
 
     setIsMinting(true);
@@ -140,12 +133,120 @@ export default function MintPage() {
     }
   };
 
+  const launchWSS = () => {
+    console.log("launchWSS ... ");
+
+    const solanaRpcWssAlchemy = "wss://api.devnet.solana.com";
+    if (!solanaRpcWssAlchemy) {
+        throw new Error('SOLANA_RPC_WSS_ALCHEMY is not defined in the .env file');
+    }
+    const ws = new WebSocket(solanaRpcWssAlchemy);
+
+    ws.onopen = () => {
+      console.log('connected');
+
+      const walletAccount1 = "5yEnvhM4Ld3UZs2n173J2iR369E1ddcbQYeLSZxk4cYj";
+      const walletAccount2 = "7aJhJAhUYYaBGs5K8i5GCQb9yXbzMfEds4ZkqhhGnAVA";
+
+      const tokenAccountBilly = "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump";
+      const pixsolTokenCollection_devnet = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
+      const pixsolTokenMerkleTree_devnet = "4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc"; 
+
+      subscribeToAccount(ws, pixsolTokenMerkleTree_devnet);
+    };
+
+    ws.onmessage = (event) => {
+      const jsonMessage = event.data;
+      console.log('received: %s', jsonMessage);
+
+      const wsMsg = JSON.parse(jsonMessage.toString());
+
+      if (wsMsg.id) {
+        const walletAddress = walletRequests[wsMsg.id];
+
+        if (walletAddress) {
+            walletSubscriptions[wsMsg.result] = walletAddress;
+            console.log('Subscribed to wallet:', walletAddress, 'with subscription ID:', wsMsg.result);
+        }
+      } else if (wsMsg.method === "accountNotification") {
+        const subscriptionId = wsMsg.params.subscription;
+        const walletAddress = walletSubscriptions[subscriptionId];
+
+        if (walletAddress) {
+          const lamports = wsMsg.params.result.value.lamports;
+          const sols = lamports / LAMPORTS_PER_SOL;
+          const timestamp = Date.now();
+
+          // console.log('Wallet %s, sol balance: %s', walletAddress, sols);
+
+          if (wsMsg.result && wsMsg.result.value && wsMsg.result.value.data && wsMsg.result.value.data.parsed) {
+              const accountData = wsMsg.result.value.data.parsed;
+              if (accountData.info && accountData.info.mint) {
+              const mintAddress = accountData.info.mint;
+              const tokenName = Object.keys(tokenAccounts).find(key => tokenAccounts[key] === mintAddress);
+              if (tokenName) {
+                  console.log(`Interaction détectée avec le token ${tokenName} (${mintAddress})`);
+              }
+              }
+          }
+
+          walletTransactions.push({
+              wallet: walletAddress,
+              sols: sols,
+              timestamp: timestamp
+          });
+
+          console.log(" --------------------------------------------");
+          console.log("[   Wallet Address                             , Bal(Sol),  Timestamp          ]");
+          
+          let walletContent = `
+              <table style="width:100%; border-collapse: collapse;">
+                  <thead>
+                      <tr>
+                          <th style="border: 1px solid black; padding: 8px;">Wallet Address</th>
+                          <th style="border: 1px solid black; padding: 8px;">Balance (Sol)</th>
+                          <th style="border: 1px solid black; padding: 8px;">Timestamp</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+          `;
+          
+          walletTransactions.forEach(transaction => {
+              const logMessage = `[ ${transaction.wallet} , ${transaction.sols.toFixed(2)} , ${new Date(transaction.timestamp).toLocaleString()} ]`;
+              console.log(logMessage);
+              walletContent += `
+              <tr>
+                  <td style="border: 1px solid black; padding: 8px;">${transaction.wallet}</td>
+                  <td style="border: 1px solid black; padding: 8px;">${transaction.sols.toFixed(2)}</td>
+                  <td style="border: 1px solid black; padding: 8px;">${new Date(transaction.timestamp).toLocaleString()}</td>
+              </tr>
+          `;
+          });
+
+                    walletContent += `
+                  </tbody>
+              </table>
+          `;
+          
+          console.log(" --------------------------------------------");
+          
+          setWebSocketMsg(walletContent);
+            
+        }
+      }
+    };
+
+    ws.onclose = () => {
+        console.log('disconnected');
+        currentRequestId = 1;
+    };
+  };
+
   return (
     <Box p={5} className="max-w-4xl mx-auto">
       <Tabs variant="enclosed" className="bg-gray-100 rounded-lg shadow-md">
         <TabList className="bg-white border-b border-gray-200">
           <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Mint NFT</Tab>
-          {/* <Tab className="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">Collection NFTs</Tab> */}
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -170,31 +271,16 @@ export default function MintPage() {
               {mintResult && <Text className="mt-4 text-green-600">{mintResult}</Text>}
             </Box>
           </TabPanel>
-          {/* <TabPanel>
-            <Box className="p-6">
-              <Text fontSize="2xl" className="mb-4 font-bold text-gray-800">Collection NFTs</Text>
-              {!connected ? (
-                <Text className="text-red-500">Please connect your wallet to view the collection.</Text>
-              ) : isLoadingNFTs ? (
-                <Text>Loading NFTs...</Text>
-              ) : nfts.length === 0 ? (
-                <Text>No NFTs found in this collection.</Text>
-              ) : (
-                <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
-                  {nfts.map((nft, index) => (
-                    <Box key={index} borderWidth="1px" borderRadius="lg" overflow="hidden">
-                      <Image src={nft.image} alt={nft.name} />
-                      <Box p="6">
-                        <Text fontWeight="semibold">{nft.name}</Text>
-                      </Box>
-                    </Box>
-                  ))}
-                </Grid>
-              )}
-            </Box>
-          </TabPanel> */}
         </TabPanels>
       </Tabs>
+      <div>
+        {webSocketMsg && (
+            <> <br></br>
+                <h1>Websocket listener on MerkleTree wallet:</h1>
+                <div className="mt-4" dangerouslySetInnerHTML={{ __html: webSocketMsg }}></div>
+            </>
+        )}
+      </div>
     </Box>
   );
 }
