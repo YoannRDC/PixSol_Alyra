@@ -1,9 +1,9 @@
 import { Metaplex, ReadApiConnection } from "@metaplex-foundation/js";
 import { PublicKey, clusterApiUrl } from "@solana/web3.js";
-import dotenv from "dotenv";
+//import dotenv from "dotenv";
 
 // Load environment variables
-dotenv.config();
+//dotenv.config();
 
 // Set up the connection
 const CLUSTER_URL = process.env.RPC_URL ?? clusterApiUrl("devnet");

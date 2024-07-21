@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { createSignerFromKeypair, generateSigner, signerIdentity, type Context } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { createTree, fetchMerkleTree, fetchTreeConfigFromSeeds, mintToCollectionV1, mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
