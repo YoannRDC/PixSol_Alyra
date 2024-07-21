@@ -12,7 +12,6 @@ import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
 const BOARD_SIZE = 10; // grid size
 
-
 interface SelectedArea {
   start: { x: number; y: number }
   end: { x: number; y: number }
@@ -35,7 +34,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const { connected, publicKey: player_pubkey } = useWallet();
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
   const [batchIds, setBatchIds] = useState<string>('');
-  const [batchDepositAmount, setBatchDepositAmount] = useState<number>(20000000);
+  const [batchDepositAmount, setBatchDepositAmount] = useState<number>(0);
   const [pixelIds, setPixelIds] = useState<number[]>([]);
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, player_pubkey: string } }>({})
   const [pixelsUpdateBDD, setPixelsUpdateBDD] = useState<{ [key: string]: string }>({});
@@ -44,22 +43,34 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const [isLoading, setIsLoading] = useState(true)
   const toast = useToast();
 
-  const isMultiplePixelsSelected = useMemo(() => {
-    if (!selectedArea) return false
+  useEffect(() => {
+    if (!selectedArea) {
+      setPixelIds([]);
+      setBatchDepositAmount(0);
+      return;
+    }
     
-    const pixels: number[] = []
+    const pixels: number[] = [];
     for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
       for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
         pixels.push(y * BOARD_SIZE + x);
       }
     }
-    setPixelIds(pixels)
-
-    const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
-    const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1
-    return width > 1 || height > 1
+    setPixelIds(pixels);
+    
+    // Update batchDepositAmount
+    setBatchDepositAmount(pixels.length * 10000000);
+  
+    const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1;
+    const height = Math.abs(selectedArea.end.y - selectedArea.start.y) + 1;
+    
+    // Instead of returning a boolean, we'll set a state
+    setIsMultiplePixelsSelected(width > 1 || height > 1);
   }, [selectedArea]);
-
+  
+  // Add this state
+  const [isMultiplePixelsSelected, setIsMultiplePixelsSelected] = useState(false);
+  
   const isValidImageSelection = useMemo(() => {
     if (!selectedArea) return false
     const width = Math.abs(selectedArea.end.x - selectedArea.start.x) + 1
@@ -132,10 +143,8 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
     }
   }, [triggerUpdateBDD]);
 
-const triggerUpdateBDDcolors = async () => {
-  
+  const triggerUpdateBDDcolors = async () => {
     if (player_pubkey) {
-    
       // Call your API to update the pixel data
       const response = await fetch('/api/pixels-color-update', {
         method: 'POST',
@@ -229,7 +238,6 @@ const triggerUpdateBDDcolors = async () => {
         }
         console.log("newPixelData: ", newPixelData);
         setPixelData(newPixelData);
-
       };
       img.onerror = () => {
         console.log("Erreur de chargement de l'image");
@@ -271,8 +279,8 @@ const triggerUpdateBDDcolors = async () => {
             <Button 
               onClick={() => setSelectedOption('image')} 
               colorScheme={selectedOption === 'image' ? 'blue' : 'gray'} 
-              disabled={!isMultiplePixelsSelected}
-              title={!isMultiplePixelsSelected ? "Select at least 2x2 pixels for image upload" : ""}
+              disabled={!isValidImageSelection}
+              title={!isValidImageSelection ? "Select at least 2x2 pixels for image upload" : ""}
             >
               Image
             </Button>
