@@ -18,10 +18,10 @@ import { Box, Button, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useToast } 
 //   }>;
 // }
 
-interface MintResponse {
-  mintNumber: string;
-  signature: string;
-}
+// interface MintResponse {
+//   mintNumber: string;
+//   signature: string;
+// }
 
 export default function MintPage() {
   const { publicKey, connected } = useWallet();
