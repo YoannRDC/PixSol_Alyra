@@ -157,7 +157,7 @@ export default function MintPage() {
 
     ws.onmessage = (event) => {
       const jsonMessage = event.data;
-      console.log('received: %s', jsonMessage);
+      // console.log('received: %s', jsonMessage);
 
       const wsMsg = JSON.parse(jsonMessage.toString());
 
@@ -200,15 +200,15 @@ export default function MintPage() {
           console.log("[   Wallet Address                             , Bal(Sol),  Timestamp          ]");
           
           let walletContent = `
-              <table style="width:100%; border-collapse: collapse;">
-                  <thead>
-                      <tr>
-                          <th style="border: 1px solid black; padding: 8px;">Wallet Address</th>
-                          <th style="border: 1px solid black; padding: 8px;">Balance (Sol)</th>
-                          <th style="border: 1px solid black; padding: 8px;">Timestamp</th>
-                      </tr>
-                  </thead>
-                  <tbody>
+            <table style="width:100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th style="border: 1px solid black; padding: 8px;">Wallet Address</th>
+                  <th style="border: 1px solid black; padding: 8px;">Balance (Sol)</th>
+                  <th style="border: 1px solid black; padding: 8px;">Timestamp</th>
+                </tr>
+              </thead>
+            <tbody>
           `;
           
           walletTransactions.forEach(transaction => {
@@ -223,10 +223,7 @@ export default function MintPage() {
           `;
           });
 
-                    walletContent += `
-                  </tbody>
-              </table>
-          `;
+          walletContent += `</tbody></table>`;
           
           console.log(" --------------------------------------------");
           
@@ -274,11 +271,12 @@ export default function MintPage() {
         </TabPanels>
       </Tabs>
       <div>
+        <br></br>
+        <h1>Websocket listener on MerkleTree wallet:</h1>
         {webSocketMsg && (
-            <> <br></br>
-                <h1>Websocket listener on MerkleTree wallet:</h1>
-                <div className="mt-4" dangerouslySetInnerHTML={{ __html: webSocketMsg }}></div>
-            </>
+          <> 
+            <div className="mt-4" dangerouslySetInnerHTML={{ __html: webSocketMsg }}></div>
+          </>
         )}
       </div>
     </Box>
