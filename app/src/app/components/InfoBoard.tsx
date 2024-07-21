@@ -70,14 +70,12 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   const handleUpdateByBatch = async () => {
     console.log("handleUpdateByBatch ...");
     if (!connected || !programInitialized) {
-      console.log("(1) ...");
       setUpdateStatus('Please connect your wallet and wait for program initialization.')
       return
     }
 
     const ids = batchIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
     if (ids.length === 0) {
-      console.log("(2) ...");
       setUpdateStatus('Please enter valid pixel IDs for batch update.')
       return
     }
@@ -90,9 +88,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
 
     setUpdateStatus('Updating pixels in batch...')
     try {
-      console.log("(3) ...");
       const tx = await updateByBatch(ids, batchDepositAmount);
-      console.log("(4) ...");
       const successMsg = `Batch update successful. Transaction signature: ${tx}`;
       
       // trigger BDD update
@@ -108,7 +104,6 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
       });
 
     } catch (error) {
-      console.log("(5) ...");
       const errorMsg = `Batch update failed: ${error instanceof Error ? error.message : String(error)}`
       console.error('Batch update failed:', errorMsg)
       setUpdateStatus(errorMsg);
@@ -125,7 +120,7 @@ const InfoBoard: React.FC<InfoBoardProps> = ({ selectedArea, onColorChange, onIm
   useEffect(() => {
     if (triggerUpdateSC) {
       handleUpdateByBatch();
-      setTriggerUpdateBDD(false);
+      setTriggerUpdateSC(false);
     }
   }, [triggerUpdateSC]);
 
@@ -141,11 +136,6 @@ const triggerUpdateBDDcolors = async () => {
   
     if (player_pubkey) {
     
-      console.log("JSON:", JSON.stringify({
-        pixels: pixelsUpdateBDD,
-        player_pubkey: player_pubkey.toString(),
-      }));
-
       // Call your API to update the pixel data
       const response = await fetch('/api/pixels-color-update', {
         method: 'POST',
@@ -169,6 +159,7 @@ const triggerUpdateBDDcolors = async () => {
       // Convert the pixel selection Position to ids. 
       const pixelsUpdateCounter: number[] = [];
       const pixelsUpdateBDD_build: {[key: string]: string} = {}
+
       for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
         for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
 
@@ -189,7 +180,6 @@ const triggerUpdateBDDcolors = async () => {
 
       // Store the value to update samrt contract
       const pixelUpdateCounterString = pixelsUpdateCounter.join(',');
-      console.log("pixelUpdateCounterString:", pixelUpdateCounterString);
       setBatchIds(pixelUpdateCounterString);
 
       // Update smart contract
@@ -218,6 +208,7 @@ const triggerUpdateBDDcolors = async () => {
           console.log("Impossible d'obtenir le contexte 2D du canvas");
           return;
         }
+
         const width = selectedArea.end.x - selectedArea.start.x + 1;
         const height = selectedArea.end.y - selectedArea.start.y + 1;
         canvas.width = width;
@@ -238,6 +229,7 @@ const triggerUpdateBDDcolors = async () => {
         }
         console.log("newPixelData: ", newPixelData);
         setPixelData(newPixelData);
+
       };
       img.onerror = () => {
         console.log("Erreur de chargement de l'image");
@@ -247,7 +239,7 @@ const triggerUpdateBDDcolors = async () => {
       console.log("selectedArea && player_pubkey && file not fullfiled");
     }
   }
-  
+
   return (
     <Box p={5} border="1px" borderColor="gray.200" borderRadius="md">
       {selectedArea ? (
@@ -286,7 +278,28 @@ const triggerUpdateBDDcolors = async () => {
             </Button>
           </Flex>
           {selectedOption === 'color' ? (
-            <ColorWheel onChange={color => onColorChange(color.toString('hex'))} />
+            <ColorWheel onChange={color => {
+              // Update image
+              onColorChange(color.toString('hex'))
+
+              if (player_pubkey) {
+
+                // Store value for bdd update
+                const width = selectedArea.end.x - selectedArea.start.x + 1;
+                const height = selectedArea.end.y - selectedArea.start.y + 1;
+                const newPixelData = { ...pixelData };
+                for (let x = 0; x < width; x++) {
+                  for (let y = 0; y < height; y++) {
+                    const key = `x${selectedArea.start.x + x}y${selectedArea.start.y + y}`;
+                    const hexColor = `${color.toString('hex')}`;
+                    newPixelData[key] = { color:hexColor, player_pubkey: player_pubkey.toString() };
+
+                  }
+                }
+                setPixelData(newPixelData);
+              }
+            }
+          } />
           ) : (
             <Input 
               type="file" 
@@ -305,7 +318,7 @@ const triggerUpdateBDDcolors = async () => {
         mt={4}
         isDisabled={!connected || !selectedArea}
       >
-        {connected ? (selectedArea ? 'Color Pixel(s)' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
+        {connected ? (selectedArea ? 'Save changes' : 'Select Pixel(s) to Color') : 'Connect Wallet to Paint'}
       </Button>
       {selectedOption === 'image' && !isValidImageSelection && (
         <Text color="red.500" mt={2} fontSize="sm">
