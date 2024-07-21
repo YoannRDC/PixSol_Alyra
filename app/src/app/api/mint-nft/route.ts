@@ -27,7 +27,7 @@ const signer = createSignerFromKeypair(umi, keypair);
 
 umi.use(signerIdentity(signer));
 
-const mintCountPath = path.join(process.cwd(), 'data', 'mintCount.json');
+const mintCountPath = path.join(process.cwd(), 'public', 'mintCount.json');
 
 function getMintCount(): number {
   try {
