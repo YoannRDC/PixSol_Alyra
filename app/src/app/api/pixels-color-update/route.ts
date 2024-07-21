@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const fetchCache = 'force-no-store';  // Disable caching for this route
+
 export async function POST(request: NextRequest) {
   try {
     const { default: SingletonPixelService } = await import('../pixelService');
@@ -7,10 +9,8 @@ export async function POST(request: NextRequest) {
     const pixelService = SingletonPixelService.getInstance().getPixelService();
     await pixelService.buyPixels(pixels, player_pubkey);
 
-    const response = NextResponse.json({ message: 'Pixels bought successfully' });
-    
-    // Add cache control headers
-    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    const response = NextResponse.json({ message: 'Pixels bought successfully', timestamp: Date.now() });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return response;
 
   } catch (error) {
@@ -19,9 +19,7 @@ export async function POST(request: NextRequest) {
       { message: 'Error buying pixels', error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
-    
-    // Add cache control headers to error response as well
-    errorResponse.headers.set('Cache-Control', 'no-store, max-age=0');
+    errorResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return errorResponse;
   }
 }
