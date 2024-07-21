@@ -21,7 +21,7 @@ Dans un souci de transparence, la version actuelle que vous voyez est la V1 du p
 
 ## Website Demo (Vercel)
 
-[Lien vers le site](https://pix-sol-yoannrdc-yoanns-projects-e7a022b4.vercel.app)
+[Lien vers le site](https://pixsol.world/)
 
 ## Installation du projet
 
