@@ -7,6 +7,8 @@ import PixelBoard from './components/PixelBoard';
 import InfoBoard from './components/InfoBoard';
 import { Box, Heading, Flex } from '@chakra-ui/react';
 
+export const fetchCache = 'force-no-store'; 
+
 // WARNING: CHANGE ALSO IN INFO BORAD
 const BOARD_SIZE = 10; // grid size
 
