@@ -81,3 +81,5 @@ Notre Smart Contract est écrit en Rust en utilisant le framework Anchor.
 ## License
 
 (Section à compléter)
+
+useless comment
