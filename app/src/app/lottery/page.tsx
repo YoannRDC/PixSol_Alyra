@@ -26,8 +26,8 @@ import { base58 } from '@metaplex-foundation/umi/serializers';
 const BOARD_SIZE = 20; // 20x20 grid
 
 export default function Home() {
-  const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
-  const [pixelOwners, setPixelOwners] = useState<string[]>([]);
+  const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, player_pubkey: string } }>({})
+  const [pixelplayer_pubkeys, setPixelplayer_pubkeys] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true)
   const { connection } = useConnection()
   const [loading, setLoading] = useState(false);
@@ -57,15 +57,15 @@ export default function Home() {
       try {
         const response = await fetch('/api/pixels');
         const pixels = await response.json();
-        const newPixelData = pixels.reduce((acc: { [key: string]: { color: string, owner: string } }, pixel: any) => {
-          acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
+        const newPixelData = pixels.reduce((acc: { [key: string]: { color: string, player_pubkey: string } }, pixel: any) => {
+          acc[pixel.address] = { color: pixel.color, player_pubkey: pixel.player_pubkey };
           return acc;
-        }, {} as { [key: string]: { color: string, owner: string } });
+        }, {} as { [key: string]: { color: string, player_pubkey: string } });
         setPixelData(newPixelData);
         
-        // Extract unique owners
-        const owners = [...new Set(pixels.map((pixel: any) => pixel.owner)) as any];
-        setPixelOwners(owners);
+        // Extract unique player_pubkeys
+        const player_pubkeys = [...new Set(pixels.map((pixel: any) => pixel.player_pubkey)) as any];
+        setPixelplayer_pubkeys(player_pubkeys);
       } catch (error) {
         console.error('Error loading pixel data:', error);
       } finally {
@@ -110,7 +110,7 @@ export default function Home() {
   };
 
   const handleMint = async () => {
-    if (!wallet.connected || !wallet.publicKey || !umi || pixelOwners.length === 0) {
+    if (!wallet.connected || !wallet.publicKey || !umi || pixelplayer_pubkeys.length === 0) {
       setError('Please connect your wallet and ensure pixel data is loaded.');
       return;
     }
@@ -128,12 +128,12 @@ export default function Home() {
 
       console.log('Tree Config:', treeConfig);
       
-      // Randomly select a pixel owner
-      const randomOwner = pixelOwners[Math.floor(Math.random() * pixelOwners.length)];
-      setWinnerWallet(randomOwner);
+      // Randomly select a pixel player_pubkey
+      const randomplayer_pubkey = pixelplayer_pubkeys[Math.floor(Math.random() * pixelplayer_pubkeys.length)];
+      setWinnerWallet(randomplayer_pubkey);
       const tx = transactionBuilder()
         .add(mintV1(umi, {
-          leafOwner: createPublicKey(randomOwner),
+          leafOwner: createPublicKey(randomplayer_pubkey),
           merkleTree: createPublicKey(merkleTreePublicKey.toBase58()),
           metadata: {
             name: 'NFT FOR DAO',
