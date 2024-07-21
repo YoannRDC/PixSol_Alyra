@@ -51,7 +51,7 @@ function subscribeToAccount(ws: any, account: any) {
           account,
           {
               "encoding": "jsonParsed",
-              "commitment": "confirmed"
+              "commitment": "finalized"
           }
       ]
   };
@@ -67,6 +67,7 @@ export default function MintPage() {
   const [webSocketMsg, setWebSocketMsg] = useState<string | null>(null);
   const toast = useToast();
   const hasLaunchedWSS = useRef(false);
+  const [httpMsg, setHttpMsg] = useState<any[]>([]);
 
   useEffect(() => {
     if (!hasLaunchedWSS.current) {
@@ -145,11 +146,6 @@ export default function MintPage() {
     ws.onopen = () => {
       console.log('connected');
 
-      const walletAccount1 = "5yEnvhM4Ld3UZs2n173J2iR369E1ddcbQYeLSZxk4cYj";
-      const walletAccount2 = "7aJhJAhUYYaBGs5K8i5GCQb9yXbzMfEds4ZkqhhGnAVA";
-
-      const tokenAccountBilly = "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump";
-      const pixsolTokenCollection_devnet = "4sdP7c81MbHc5hihffobprdBfXmKK7b7xnVzqopJJrCp";
       const pixsolTokenMerkleTree_devnet = "4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc"; 
 
       subscribeToAccount(ws, pixsolTokenMerkleTree_devnet);
@@ -157,7 +153,7 @@ export default function MintPage() {
 
     ws.onmessage = (event) => {
       const jsonMessage = event.data;
-      // console.log('received: %s', jsonMessage);
+      console.log('Wallet event receiver ...');
 
       const wsMsg = JSON.parse(jsonMessage.toString());
 
@@ -239,6 +235,63 @@ export default function MintPage() {
     };
   };
 
+  const handleHttpButtonClick = () => {
+
+    const pixsolTokenMerkleTree_devnet = "4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc"; 
+
+    // Appel de la fonction pour récupérer les transactions
+    getLastTransactionsForProgram(pixsolTokenMerkleTree_devnet);
+
+
+  };
+
+  // Function to get the last x confirmed transactions for a given Solana program
+  async function getLastTransactionsForProgram(programAddress: string) {
+    try {
+        const solanaRpcWssAlchemy = "https://api.devnet.solana.com";
+        const response = await axios.post(solanaRpcWssAlchemy, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getSignaturesForAddress',
+            params: [programAddress, { limit: 3 }],
+        });
+
+        const transactions = response.data.result;
+
+        // Process each transaction
+        transactions.forEach((transaction: any) => {
+            console.log('Transaction BlockTime:', convertBlocktimeToDate(transaction.blockTime));
+        });
+
+        // Set the transactions to the state
+        setHttpMsg(transactions);
+        
+        console.log(' -----------------------------------');
+        console.log('Transactions bruts:', transactions);
+
+        const blockTimes = transactions.map((tx: { blockTime: any; }) => tx.blockTime);
+        blockTimes.forEach((blockTime: any) => console.log('Transaction BlockTime:', convertBlocktimeToDate(blockTime)));
+
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+    }
+  }
+
+  function convertBlocktimeToDate(blocktime: any) {
+    // Convert the blocktime to milliseconds
+    const date = new Date(blocktime * 1000);
+  
+    // Format the date
+    const formattedDate = date.toLocaleString();
+  
+    return formattedDate;
+  }
+
+  const headingStyle: React.CSSProperties = {
+    fontSize: '20px',
+    textDecoration: 'underline',
+  };
+
   return (
     <Box p={5} className="max-w-4xl mx-auto">
       <Tabs variant="enclosed" className="bg-gray-100 rounded-lg shadow-md">
@@ -272,7 +325,21 @@ export default function MintPage() {
       </Tabs>
       <div>
         <br></br>
-        <h1>Websocket listener on MerkleTree wallet:</h1>
+        <Button onClick={handleHttpButtonClick} colorScheme="teal" className="mt-4">Read the last 3 transactions of the Merkle Tree</Button>
+        {httpMsg && (
+          <div className="mt-2">
+            {httpMsg.map((msg, index) => (
+              <div key={index} className="mb-2 p-2 border border-gray-200 rounded">
+                <Text>Signature: {msg.signature}</Text>
+                <Text>Slot: {msg.slot}</Text>
+                <Text>Block Time: {convertBlocktimeToDate(msg.blockTime)}</Text>
+                <Text>Status: {msg.confirmationStatus}</Text>
+              </div>
+            ))}
+          </div>
+        )}
+        <br></br><br></br>
+        <h1 style={headingStyle}>Websocket listener on MerkleTree wallet:</h1>
         {webSocketMsg && (
           <> 
             <div className="mt-4" dangerouslySetInnerHTML={{ __html: webSocketMsg }}></div>
