@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const SingletonPixelService = require('../pixelService');
-
 export async function POST(request: NextRequest) {
   try {
-    const { pixels, owner } = await request.json();
+    const { default: SingletonPixelService } = await import('../pixelService');
+    const { pixels, player_pubkey } = await request.json();
     const pixelService = SingletonPixelService.getInstance().getPixelService();
-    await pixelService.buyPixels(pixels, owner);
+    await pixelService.buyPixels(pixels, player_pubkey);
     return NextResponse.json({ message: 'Pixels bought successfully' });
   } catch (error) {
-    return NextResponse.json({ message: 'Error buying pixels' }, { status: 500 });
+    console.error('Error buying pixels:', error);
+    return NextResponse.json(
+      { message: 'Error buying pixels', error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }

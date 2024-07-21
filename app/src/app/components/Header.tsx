@@ -30,6 +30,7 @@ const Header: React.FC = () => {
                     <NavLink href="/lottery" isActive={pathname === "/lottery"}>Lottery</NavLink>
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
                     <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>Smart Contract Demo</NavLink>
+                    <NavLink href="/httpWebsocket" isActive={pathname === "/httpWebsocket"}>HTTP / WebSocket </NavLink>
                 </HStack>
 
                 <Flex alignItems="center">
@@ -52,11 +53,14 @@ const Header: React.FC = () => {
                     <NavLink href="/lottery" isActive={pathname === "/lottery"}>Lottery</NavLink>
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
                     <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>SC Demo</NavLink>
+                    <NavLink href="/httpWebsocket" isActive={pathname === "/httpWebsocket"}>SC Demo</NavLink>
                 </VStack>
             </Collapse>
         </Box>
     );
 };
+
+
 
 interface NavLinkProps {
     href: string;
@@ -65,16 +69,15 @@ interface NavLinkProps {
 }
 
 const NavLink: React.FC<NavLinkProps> = ({ href, children, isActive }) => (
-    <NextLink href={href} passHref>
-        <Button 
-            as="a" 
-            variant={isActive ? "solid" : "ghost"} 
-            colorScheme={isActive ? "blue" : "gray"}
-            color={useColorModeValue('gray.600', 'white')}
-        >
-            {children}
-        </Button>
-    </NextLink>
+    <Button
+        as={NextLink}
+        href={href}
+        variant={isActive ? "solid" : "ghost"}
+        colorScheme={isActive ? "blue" : "gray"}
+        color={useColorModeValue('gray.600', 'white')}
+    >
+        {children}
+    </Button>
 );
 
 export default Header;
