@@ -8,6 +8,7 @@ import InfoBoard from './components/InfoBoard';
 import { Box, Heading, Flex } from '@chakra-ui/react';
 
 export const fetchCache = 'force-no-store'; 
+export const dynamic = "force-dynamic"
 
 // WARNING: CHANGE ALSO IN INFO BORAD
 const BOARD_SIZE = 10; // grid size
