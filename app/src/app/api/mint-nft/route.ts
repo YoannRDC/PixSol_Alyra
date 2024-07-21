@@ -41,6 +41,8 @@ export async function POST(req: Request) {
     const currentMintCount = await pixelService.getMintCount();
     const nextMintCount = await pixelService.incrementMintCount();
 
+    const uri = `ipfs://bafybeic5ixjhyiejjlcr42fr5gh6xvdmghnffz5l26ienxx5l62xdfydha/pixel_${nextMintCount}.png`;
+
     const mintResult = await mintToCollectionV1(umi, {
       leafOwner: publicKey(userPublicKey),
       merkleTree: publicKey(MERKLE_TREE),
@@ -48,7 +50,7 @@ export async function POST(req: Request) {
       collectionAuthority: signer,
       metadata: {
         name: `${nextMintCount}`,
-        uri: `ipfs://bafybeia3wuho4sfnks5vvd76qbbnnd5yqr2zoeiriskrlowzgjb5fqeuie/`,
+        uri: uri,
         sellerFeeBasisPoints: 500,
         collection: { key: publicKey(COLLECTION_MINT), verified: true },
         creators: [{ address: signer.publicKey, verified: true, share: 100 }],
