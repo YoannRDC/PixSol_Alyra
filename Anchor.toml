@@ -1,12 +1,12 @@
 [programs.localnet]
-# pixel = "target/deploy/pixel-keypair.json"
-# governance = "target/deploy/governance-keypair.json"
+deposit = "target/deploy/deposit-keypair.json"
+governance = "target/deploy/governance-keypair.json"
 
 [registry]
-url = "https://api.apr.dev"
+url = "https://api.devnet.solana.com"
 
 [provider]
-cluster = "localnet"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
