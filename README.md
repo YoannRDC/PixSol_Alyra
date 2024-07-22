@@ -14,7 +14,7 @@ Le projet fait interagir deux acteurs complémentaires :
 
 Avec ce projet, nous souhaitons offrir un canal interactif à nos utilisateurs : certains apprécieront le côté ludique et l'évolution rapide du board, tandis que d'autres valoriseront les revenus et les possibilités d'échanges dynamiques des pixels sur le marché secondaire.
 
-## Version 1
+## Pixsol_V1
 
 Dans un souci de transparence, la version actuelle que vous voyez est la V1 du projet. Cette version nous permet de tester nos premiers smart contracts sur Anchor, d'explorer les différentes possibilités et limites, et d'adapter les versions futures en conséquence.
 
