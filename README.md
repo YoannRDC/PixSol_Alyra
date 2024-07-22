@@ -1,7 +1,5 @@
 # PixSol
 
-# PixSol
-
 ## Présentation générale
 
 Le projet PixSol est une application offrant un tableau interactif (Board) où les utilisateurs peuvent colorier des NFTs (appelés Pixels), uploader des images, et compléter les œuvres d'autres utilisateurs. PixSol_V1 tend à être le proof of concept d'un projet plus ambitieux souhaitant gamifier l'expérience NFT.
