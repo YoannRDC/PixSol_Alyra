@@ -104,18 +104,18 @@ Il vous suffit de copier-coller les fichiers `mutable_dictionary.rs` et `test.ts
 
 Dans la partie `/programs`, vous pouvez découvrir de nombreux autres programmes qui nous ont servi de support de R&D sur des sujets comme la gouvernance, la limitation des données, les arbres Merkle, les votes, etc...
 
-- **mutable_dictionary.rs**: Ce programme gère un dictionnaire mutable contenant 100 entrées, chacune avec un ID et une valeur. Il permet de lire, mettre à jour, déposer des lamports dans un coffre et retirer des valeurs en fonction des entrées du dictionnaire. Les fonctions incluses gèrent ces opérations de manière simple et en lot, tout en assurant la validation et la gestion des erreurs. [Lien Explorer](https://explorer.solana.com/address/6FBQBJE6pFaRq6iPMc2HN6rRq7TCtzWqLBv7za9BNvtU?cluster=devnet)
+- **mutable_dictionary.rs**: Ce programme gère un dictionnaire mutable contenant 100 entrées, chacune avec un ID et une valeur. Il permet de lire, mettre à jour, déposer des lamports dans un vault et retirer des valeurs en fonction des entrées du dictionnaire. Les fonctions incluses gèrent ces opérations de manière simple et en lot, tout en assurant la validation et la gestion des erreurs. [Lien Explorer](https://explorer.solana.com/address/6FBQBJE6pFaRq6iPMc2HN6rRq7TCtzWqLBv7za9BNvtU?cluster=devnet)
 
 ## Tests
 
 `test.ts` couvre l'ensemble des fonctions du smart contract.
 
-- `initialize()`: Initialise un dictionnaire et un coffre.
-- `update()`: Met à jour le compteur de dépôt sur l'ID d'un pixel et transfère le montant du dépôt dans le coffre.
+- `initialize()`: Initialise un dictionnaire et un vault.
+- `update()`: Met à jour le compteur de dépôt sur l'ID d'un pixel et transfère le montant du dépôt dans le vault.
 - `read()`: Retourne la valeur du compteur sur un pixel.
-- `withdraw_and_reset()`: Retire la somme du coffre attribuée à un pixel et réinitialise le compteur à zéro.
-- `update_by_batch()`: Met à jour les compteurs sur les IDs des pixels et transfère le montant total du dépôt dans le coffre.
-- `withdraw_and_reset_by_batch()`: Retire la somme du coffre attribuée à des pixels et réinitialise les compteurs à zéro.
+- `withdraw_and_reset()`: Retire la somme du vault attribuée à un pixel et réinitialise le compteur à zéro.
+- `update_by_batch()`: Met à jour les compteurs sur les IDs des pixels et transfère le montant total du dépôt dans le vault.
+- `withdraw_and_reset_by_batch()`: Retire la somme du vault attribuée à des pixels et réinitialise les compteurs à zéro.
 - `read_by_batch()`: Retourne les valeurs de plusieurs compteurs.
 
 Vous pouvez retrouver l'implémentation des tests pour la gestion du frontend dans `/app/src/app/hooks/useMutableDictionary.ts`
