@@ -16,7 +16,9 @@ Avec ce projet, nous souhaitons offrir un canal interactif à nos utilisateurs :
 
 ## Pixsol_V1
 
-Dans un souci de transparence, la version actuelle que vous voyez est la V1 du projet. Cette version nous permet de tester nos premiers smart contracts sur Anchor, d'explorer les différentes possibilités et limites, et d'adapter les versions futures en conséquence.
+Dans un souci de transparence, la version actuelle que vous voyez est la V1 du projet. Cette version nous permet de tester nos premiers smart contracts sur Anchor, d'explorer les différentes possibilités et les limites, et d'adapter nos développements pour les versions futures en conséquence.
+
+Cette version nous a permis d'explorer des sujets tels que : les cNFTs (Custom Non-Fungible Tokens), les arbres de Merkle, la gestion des big data dans les smart contracts et ses limites, l'écoute d'événements on-chain, les Blink Transactions, la scalabilité, ainsi que la nécessité d'une balance on-chain/off-chain.
 
 ## Visibilité du projet
 
@@ -26,7 +28,7 @@ Le projet est actuellement hébergé sur Vercel et est disponible sur l'url suiv
 
 URL: disponible
 
-├ ○ /                         Page d'accueil
+├ ○ /                         
 
 Permet de visualiser le board et d'interagir en tant que joueur avec.
     - Je peux colorier un pixel.
@@ -35,21 +37,23 @@ Permet de visualiser le board et d'interagir en tant que joueur avec.
 
 Le tarif d'une coloration est fixé à 0.01 SOL par pixel.
 
-├ ○ /blinkxsol                           Disponible seulement avec le projet qui tourne en local.
+├ ○ /blinkxsol                           
 
-/blinkxsol permet de minter un cNFT appartenant à la collection PixelBoard afin de devenir propriétaire en utilisant @solana/actions et le système blink.
+Disponible seulement avec le projet qui tourne en local. blinkxsol permet de minter un cNFT appartenant à la collection PixelBoard afin de devenir propriétaire en utilisant @solana/actions et le système blink.
 
-├ ○ /compliance                          Mentions légales et Politique de confidentialité
+├ ○ /compliance                          
 
-├ ○ /daozone                             DAO
+Mentions légales et Politique de confidentialité
+
+├ ○ /daozone                             
 
 Zone réservée aux possesseurs d'un cNFT Pixel DAO obtenu par le tirage au sort du wallet d'un joueur du board.
 
-├ ○ /lottery                             Lottery
+├ ○ /lottery                             
 
 Réalise un snapshot du board à l'instant T et attribue un cNFT Pixel DAO à l'un des joueurs présents sur le tableau. Ce cNFT permet d'accéder à la DAO.
 
-├ ○ /mint                                Mint
+├ ○ /mint                                
 
 Permet de minter un cNFT appartenant à la collection PixelBoard afin de devenir propriétaire d'un emplacement du board et de toucher les rentes générées par les joueurs.
 
