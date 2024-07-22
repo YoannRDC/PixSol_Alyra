@@ -139,5 +139,10 @@ Vous pouvez retrouver l'implémentation des tests pour la gestion du frontend da
 -WalletMultiButton
 -Solana/web3.js
 
+### Historique du projet
+
+PowerPoint Pixel_V0 : 09/07/2024
+[Lien PowerPoint Pixel_V0](https://docs.google.com/presentation/d/1yz87HRqiVtqLVhp4D0pOigV_HGs85IlP6v7az5wZv1A/edit?usp=sharing)
+
 ## License
 MIT License
