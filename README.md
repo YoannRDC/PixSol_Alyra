@@ -76,23 +76,34 @@ npm run dev
 ### .env
 
 REDIS_URL=
+
 NEXT_PUBLIC_SOLANA_RPC_URL=
+
 MERKLETREE_LOTTERY=
+
 RPC_URL=
+
 PRIVATE_KEY_BASE58=
+
 COLLECTION_MINT=4
+
 MERKLE_TREE=
+
 CLOUDNAME=
+
 APICLOUDKEY=
+
 SECRETCLOUD=
+
 CLOUDINARY_URL=
+
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
 
 ### Smart Contracts
 
 Notre Smart Contract est écrit en Rust en utilisant le framework Anchor sur la plateforme solpg.io.
 
-Le smart contract principal et son test se trouvent dans le dossier `/programs/deposit`.
+Le smart contract principal et son test se trouvent dans le dossier `/programs/main`.
 
 Il vous suffit de copier-coller les fichiers `mutable_dictionary.rs` et `test.ts` dans un nouveau projet solpg afin de tester toutes les fonctionnalités du smart contract.
 
