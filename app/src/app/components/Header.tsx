@@ -31,6 +31,8 @@ const Header: React.FC = () => {
                     <NavLink href="/withdraw" isActive={pathname === "/withdraw"}>Withdraw</NavLink>
                     <NavLink href="/smartContractDemo" isActive={pathname === "/smartContractDemo"}>Smart Contract Demo</NavLink>
                     <NavLink href="/daozone" isActive={pathname === "/daozone"}>DAO</NavLink>
+                    <NavLink href="/blinkxsol" isActive={pathname === "/blinkxsol"}>BlinkxSol</NavLink>
+                    <NavLink href="/compliance" isActive={pathname === "/compliance"}>Compliance</NavLink>
                 </HStack>
 
                 <Flex alignItems="center">
