@@ -7,9 +7,11 @@ import PixelBoard from './components/PixelBoard';
 import InfoBoard from './components/InfoBoard';
 import { Box, Heading, Flex } from '@chakra-ui/react';
 
+export const fetchCache = 'force-no-store'; 
+export const dynamic = "force-dynamic"
+
 // WARNING: CHANGE ALSO IN INFO BORAD
 const BOARD_SIZE = 10; // grid size
-
 
 export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
@@ -91,70 +93,7 @@ export default function Home() {
     }
   }, [selectedArea, pixelData]);
 
-  const handleBuy = useCallback(async () => {
-    if (selectedArea && publicKey) {
-      const pixelsToBuy: {[key: string]: string} = {}
-      for (let x = selectedArea.start.x; x <= selectedArea.end.x; x++) {
-        for (let y = selectedArea.start.y; y <= selectedArea.end.y; y++) {
-          const key = `x${x}y${y}`
-          if (pixelData[key]) {
-            pixelsToBuy[key] = pixelData[key].color
-          }
-        }
-      }
-
-      const numPixels = Object.keys(pixelsToBuy).length;
-      const totalCost = numPixels * 0.01 * 1e9; // 0.01 SOL per pixel, converted to lamports
-
-      const recipientPubkey = new PublicKey("M88kr8ntGbL6heuAYRXf4DULABTahMgEjje1sBkhFGD");
-
-      try {
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: publicKey,
-            toPubkey: recipientPubkey,
-            lamports: totalCost,
-          })
-        );
-
-        const signature = await sendTransaction(transaction, connection);
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        console.log("Transaction signature", signature);
-
-        // Call your API to update the pixel data
-        const response = await fetch('/api/buy-pixels', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            pixels: pixelsToBuy,
-            owner: publicKey.toString(),
-            signature: signature,
-          }),
-        });
-
-        if (response.ok) {
-          console.log('Pixels bought successfully');
-          // Refresh pixel data after purchase
-          const refreshResponse = await fetch('/api/pixels');
-          const refreshedPixels = await refreshResponse.json();
-          const newPixelData = refreshedPixels.reduce((acc: { [key: string]: { color: string, owner: string } }, pixel: any) => {
-            acc[pixel.address] = { color: pixel.color, owner: pixel.owner };
-            return acc;
-          }, {} as { [key: string]: { color: string, owner: string } });
-          setPixelData(newPixelData);
-        } else {
-          console.error('Error buying pixels');
-        }
-      } catch (error) {
-        console.error('Error buying pixels:', error);
-      }
-
-      setSelectedArea(null)
-    }
-  }, [selectedArea, publicKey, connection, pixelData, sendTransaction]);
+  
 
   return (
     <Box className="flex flex-col h-screen p-4">
@@ -168,7 +107,7 @@ export default function Home() {
             isLoading={isLoading}
             onColorChange={handleColorChange}
             onImageUpload={handleImageUpload}
-            onBuy={handleBuy}
+            //onBuy={handleBuy}
             isConnected={!!publicKey}
           />
         </Box>

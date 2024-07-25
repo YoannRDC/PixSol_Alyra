@@ -23,7 +23,7 @@ interface PixelBoardProps {
   isLoading: boolean
   onColorChange: (color: string) => void
   onImageUpload: (image: File) => void
-  onBuy: () => void
+  //onBuy: () => void
   isConnected: boolean
 }
 
@@ -34,7 +34,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   isLoading,
   onColorChange,
   onImageUpload,
-  onBuy,
+  //onBuy,
   isConnected
 }) => {
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
@@ -159,15 +159,18 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
     <Flex 
       direction={isMobile ? "column" : "row"} 
       alignItems="flex-start" 
+      justifyContent={isMobile?"":"center"}
       width="100%"
       height="100vh"
       overflow="hidden"
+      marginTop={"50px"}
+      
+      
     >
       <Box
         ref={boardRef}
-        width={isMobile ? "100%" : "calc(100vh - 100px)"}
-        height={isMobile ? "auto" : "calc(100vh - 100px)"}
-        maxWidth={isMobile ? "100%" : "calc(100vh - 100px)"}
+        width={isMobile ? "100%" : "min(calc(100vh - 100px), 500px)"}
+        height={isMobile ? "auto" : "min(calc(100vh - 100px), 500px)"}
         aspectRatio="1 / 1"
         margin="0"
         display="flex"

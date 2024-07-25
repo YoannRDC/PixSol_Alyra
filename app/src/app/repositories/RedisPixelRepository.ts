@@ -48,4 +48,13 @@ export class RedisPixelRepository implements PixelRepository {
     });
     await pipeline.exec();
   }
+
+  async getMintCount(): Promise<number> {
+    const count = await this.redis.get('mintCount');
+    return count ? parseInt(count) : 50; // Start from 2000 if no count exists
+  }
+
+  async incrementMintCount(): Promise<number> {
+    return await this.redis.incr('mintCount');
+  }
 }

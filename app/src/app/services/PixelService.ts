@@ -16,4 +16,16 @@ export class PixelService {
   async getAllPixels(): Promise<PixelData[]> {
     return this.repository.getAllPixels();
   }
+
+  async updatePixels(pixels: PixelData[]): Promise<void> {
+    await this.repository.updatePixels(pixels);
+  }
+
+  async getMintCount(): Promise<number> {
+    return this.repository.getMintCount();
+  }
+
+  async incrementMintCount(): Promise<number> {
+    return this.repository.incrementMintCount();
+  }
 }

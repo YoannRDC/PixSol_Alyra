@@ -5,4 +5,6 @@ export interface PixelRepository {
   getPixel(address: string): Promise<PixelData | null>;
   getAllPixels(): Promise<PixelData[]>;
   updatePixels(pixels: PixelData[]): Promise<void>;
+  getMintCount(): Promise<number>;
+  incrementMintCount(): Promise<number>;
 }
