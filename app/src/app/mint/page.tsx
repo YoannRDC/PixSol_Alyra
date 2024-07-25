@@ -68,6 +68,7 @@ export default function MintPage() {
   const toast = useToast();
   const hasLaunchedWSS = useRef(false);
   const [httpMsg, setHttpMsg] = useState<any[]>([]);
+  const [triggerUpdateBDD, setTriggerUpdateBDD] = useState(false);
 
   useEffect(() => {
     if (!hasLaunchedWSS.current) {
@@ -86,8 +87,7 @@ export default function MintPage() {
     setMintResult(null);
 
     toast({
-      duration: 5000,
-      isClosable: true,
+      duration: 2000,
       render: () => <SubmittedToast />
     });
 
@@ -105,7 +105,11 @@ export default function MintPage() {
       if (!response.ok) {
         throw new Error('Minting failed');
       }
-      setMintResult(`NFT minted successfully! MintNumber: ${JSON.stringify(data.mintNumber)}, signature: ${JSON.stringify(data.signature)}`);
+      
+      const successMsg = `NFT minted successfully! MintNumber: ${data.mintNumber}, signature: ${data.signature}`;
+      setMintResult(successMsg);
+
+      setTriggerUpdateBDD(true);
       
       toast({
         duration: 7000,
@@ -113,15 +117,17 @@ export default function MintPage() {
         render: () => <SuccessToast signature={data.signature} />
       });
 
+      console.log("Minting successful");
+
     } catch (error) {
       console.error('Minting error:', error);
-      setMintResult('Minting failed. Please try again.');
       let errorMessage = 'An unexpected error occurred';
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
+      setMintResult(`Minting failed: ${errorMessage}`);
       
       toast({
         duration: 7000,
