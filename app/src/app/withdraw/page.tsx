@@ -7,6 +7,8 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
 import { publicKey } from '@metaplex-foundation/umi';
 import { useMutableDictionary } from '../hooks/useMutableDictionary'; 
+import { SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
+import { useToast } from '@chakra-ui/react';
 
 const SPECIFIC_TREE_KEY = '4zUUwSvaL3jagoYZHW7ArUtNj2xKTbN7Hk7PSxn5D7Kc';
 
@@ -16,6 +18,10 @@ export default function WithDrawPage() {
   const [pixsolNfts, setPixsolNfts] = useState<any[]>([]);
   const [dictionaryInfo, setDictionaryInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [withdrawStatus, setWithdrawStatus] = useState('');
+  const [triggerUpdateBDD, setTriggerUpdateBDD] = useState(false);
+
+  const toast = useToast();
 
   const { 
     readDictionaryInfo, 
@@ -31,8 +37,8 @@ export default function WithDrawPage() {
         setIsLoading(false);
         return;
       }
-
       try {
+
         const umi = createUmi(process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com')
           .use(dasApi());
 
@@ -91,12 +97,34 @@ export default function WithDrawPage() {
 
   const handleWithdraw = async () => {
     console.log("Withdraw function triggered");
+    setWithdrawStatus('Processing...');
+    toast({
+      duration: 2000,
+      render: () => <SubmittedToast />
+    });
+
     try {
-      await withdrawAndResetByBatch(pixsolNfts.map(nft => parseInt(nft.content?.metadata?.name)));
-      console.log("Withdrawal successful");
+      const ids = pixsolNfts.map(nft => parseInt(nft.content?.metadata?.name));
+      const tx = await withdrawAndResetByBatch(ids);
+      const successMsg = `Withdrawal successful. Transaction signature: ${tx}`;
+      
+      setTriggerUpdateBDD(true);
       // Optionally, you can refresh the data here
+      setWithdrawStatus(successMsg);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <SuccessToast signature={tx} />
+      });
     } catch (error) {
       console.error('Error during withdrawal:', error instanceof Error ? error.message : String(error));
+      setWithdrawStatus('Withdrawal failed. Please try again.');
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage={error instanceof Error ? error.message : String(error)} />
+      });
     }
   };
 
