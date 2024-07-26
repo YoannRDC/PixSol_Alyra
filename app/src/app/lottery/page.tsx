@@ -22,8 +22,10 @@ import {
 import { createSignerFromWalletAdapter } from '@metaplex-foundation/umi-signer-wallet-adapters';
 import { CldImage } from 'next-cloudinary';
 import { base58 } from '@metaplex-foundation/umi/serializers';
+import { useToast } from '@chakra-ui/react';
+import { SubmittedToast, SuccessToast, ErrorToast } from '../components/ToastParty';
 
-const BOARD_SIZE = 20; // 20x20 grid
+const BOARD_SIZE = 10; // 20x20 grid
 
 export default function Home() {
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, player_pubkey: string } }>({})
@@ -38,6 +40,8 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState('');
   const [shouldMint, setShouldMint] = useState(false);
   const [winnerWallet, setWinnerWallet] = useState<string | null>(null);
+  const [triggerUpdateBDD, setTriggerUpdateBDD] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (wallet.connected && wallet.publicKey) {
@@ -112,6 +116,11 @@ export default function Home() {
   const handleMint = async () => {
     if (!wallet.connected || !wallet.publicKey || !umi || pixelplayer_pubkeys.length === 0) {
       setError('Please connect your wallet and ensure pixel data is loaded.');
+      toast({
+        duration: 5000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage="Please connect your wallet and ensure pixel data is loaded." />
+      });
       return;
     }
 
@@ -119,6 +128,11 @@ export default function Home() {
     setError(null);
     setAssetId(null);
 
+    toast({
+      duration: 2000,
+      render: () => <SubmittedToast />
+    });
+    
     try {
       const merkleTreePublicKey = new PublicKey("4ywBZEPV4qZjTCjcC9HSuhHQuVJb3rhsuLmTjopmuruG");
 
@@ -145,16 +159,35 @@ export default function Home() {
             ],
           },
         }));
-       
+      
       const result = await tx.sendAndConfirm(umi, {
         confirm: { commitment: 'processed' },
       });
 
-      const signatureSerialze = base58.deserialize(result.signature);
-      setAssetId(signatureSerialze.toString());
+      const signatureSerialize = base58.deserialize(result.signature);
+      const assetIdString = signatureSerialize.toString();
+      setAssetId(assetIdString);
+
+      // Trigger BDD update
+      setTriggerUpdateBDD(true);
+
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <SuccessToast signature={assetIdString} />
+      });
+
+      console.log("Minting successful");
     } catch (err) {
-      setError('An error occurred during the minting process: ' + (err as Error).message);
+      const errorMessage = 'An error occurred during the minting process: ' + (err as Error).message;
+      setError(errorMessage);
       console.error(err);
+      
+      toast({
+        duration: 7000,
+        isClosable: true,
+        render: () => <ErrorToast errorMessage={errorMessage} />
+      });
     } finally {
       setLoading(false);
     }
