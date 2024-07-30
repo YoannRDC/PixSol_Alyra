@@ -10,7 +10,7 @@ import { walletAdapterIdentity } from '@metaplex-foundation/js'
 import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
-const BOARD_SIZE = 10; // grid size
+const BOARD_SIZE = 1000; // grid size
 
 interface SelectedArea {
   start: { x: number; y: number }

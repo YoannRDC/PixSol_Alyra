@@ -9,7 +9,7 @@ export const fetchCache = 'force-no-store';
 export const dynamic = "force-dynamic"
 
 // WARNING: CHANGE ALSO IN INFO BORAD
-const BOARD_SIZE = 10; // grid
+const BOARD_SIZE = 1000; // grid
 
 
 export default function Home() {
