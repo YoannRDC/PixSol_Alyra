@@ -108,32 +108,31 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   );
 
   const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (isSelecting) {
-        handleSelectionMove(event.clientX, event.clientY);
-      } else if (isDragging) {
-        const dx = (event.clientX - lastPanPosition.x) / zoomLevel;
-        const dy = (event.clientY - lastPanPosition.y) / zoomLevel;
+  (event: React.MouseEvent) => {
+    if (isSelecting) {
+      handleSelectionMove(event.clientX, event.clientY);
+    } else if (isDragging) {
+      const dx = (event.clientX - lastPanPosition.x) / zoomLevel;
+      const dy = (event.clientY - lastPanPosition.y) / zoomLevel;
 
-        const canvas = boardRef2.current;
-        if (!canvas) return;
-  
-        const newPanOffsetX = panOffset.x - dx;
-        const newPanOffsetY = panOffset.y - dy;
-  
-        const maxPanOffsetX = (boardSize * (canvas.width / boardSize) - canvas.width / zoomLevel);
-        const maxPanOffsetY = (boardSize * (canvas.height / boardSize) - canvas.height / zoomLevel);
-  
-        setPanOffset({
-          x: Math.max(0, Math.min(newPanOffsetX, maxPanOffsetX)),
-          y: Math.max(0, Math.min(newPanOffsetY, maxPanOffsetY)),
-        });
-  
-        setLastPanPosition({ x: event.clientX, y: event.clientY });
-      }
-    },
-    [handleSelectionMove, isSelecting, isDragging, lastPanPosition, zoomLevel, panOffset, boardSize]
-  );
+      const canvas = boardRef2.current;
+      if (!canvas) return;
+
+      const canvasWidth = canvas.width / zoomLevel;
+      const canvasHeight = canvas.height / zoomLevel;
+
+      const maxPanOffsetX = Math.max(0, boardSize - canvasWidth);
+      const maxPanOffsetY = Math.max(0, boardSize - canvasHeight);
+
+      const newPanOffsetX = Math.max(0, Math.min(panOffset.x - dx, maxPanOffsetX));
+      const newPanOffsetY = Math.max(0, Math.min(panOffset.y - dy, maxPanOffsetY));
+
+      setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
+      setLastPanPosition({ x: event.clientX, y: event.clientY });
+    }
+  },
+  [handleSelectionMove, isSelecting, isDragging, lastPanPosition, zoomLevel, panOffset, boardSize]
+);
   
   const handleTouchStart = useCallback(
     (event: React.TouchEvent) => {
@@ -146,26 +145,26 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   const handleTouchMove = useCallback(
     (event: React.TouchEvent) => {
       const touch = event.touches[0];
-      handleSelectionMove(touch.clientX, touch.clientY);
   
-      if (isDragging) {
+      if (isSelecting) {
+        handleSelectionMove(touch.clientX, touch.clientY);
+      } else if (isDragging) {
         const dx = (touch.clientX - lastPanPosition.x) / zoomLevel;
         const dy = (touch.clientY - lastPanPosition.y) / zoomLevel;
-
+  
         const canvas = boardRef2.current;
         if (!canvas) return;
   
-        const newPanOffsetX = panOffset.x - dx;
-        const newPanOffsetY = panOffset.y - dy;
+        const canvasWidth = canvas.width / zoomLevel;
+        const canvasHeight = canvas.height / zoomLevel;
   
-        const maxPanOffsetX = (boardSize * (canvas.width / boardSize) - canvas.width / zoomLevel);
-        const maxPanOffsetY = (boardSize * (canvas.height / boardSize) - canvas.height / zoomLevel);
+        const maxPanOffsetX = Math.max(0, boardSize - canvasWidth);
+        const maxPanOffsetY = Math.max(0, boardSize - canvasHeight);
   
-        setPanOffset({
-          x: Math.max(0, Math.min(newPanOffsetX, maxPanOffsetX)),
-          y: Math.max(0, Math.min(newPanOffsetY, maxPanOffsetY)),
-        });
+        const newPanOffsetX = Math.max(0, Math.min(panOffset.x - dx, maxPanOffsetX));
+        const newPanOffsetY = Math.max(0, Math.min(panOffset.y - dy, maxPanOffsetY));
   
+        setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
         setLastPanPosition({ x: touch.clientX, y: touch.clientY });
       }
     },
@@ -195,13 +194,40 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
     }
   }, [currentSelection, onSelectionChange, onOpen, isMobile]);
 
+  const adjustPanOffset = useCallback((newZoomLevel: any) => {
+    const canvas = boardRef2.current;
+    if (!canvas) return;
+  
+    const canvasWidth = canvas.width / newZoomLevel;
+    const canvasHeight = canvas.height / newZoomLevel;
+  
+    const maxPanOffsetX = Math.max(0, boardSize - canvasWidth);
+    const maxPanOffsetY = Math.max(0, boardSize - canvasHeight);
+  
+    setPanOffset(prevPanOffset => ({
+      x: Math.max(0, Math.min(prevPanOffset.x, maxPanOffsetX)),
+      y: Math.max(0, Math.min(prevPanOffset.y, maxPanOffsetY)),
+    }));
+  }, [boardSize]);
+
   const handleZoomIn = useCallback(() => {
-    setZoomLevel(prev => Math.min(prev * 1.2, 5));
-  }, []);
+    setZoomLevel(prev => {
+      const newZoomLevel = Math.min(prev * 1.2, 5);
+      adjustPanOffset(newZoomLevel);
+      return newZoomLevel;
+    });
+  }, [adjustPanOffset]);
+  
 
   const handleZoomOut = useCallback(() => {
-    setZoomLevel(prev => Math.max(prev / 1.2, 1));
-  }, []);
+    setZoomLevel(prev => {
+      const newZoomLevel = Math.max(prev / 1.2, 1);
+      adjustPanOffset(newZoomLevel);
+      return newZoomLevel;
+    });
+  }, [adjustPanOffset]);
+
+  
 
   useEffect(() => {
     if (boardRef2.current) {

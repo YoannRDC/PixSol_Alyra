@@ -8,7 +8,7 @@ import { useMutableDictionary } from '../hooks/useMutableDictionary';
 import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
-const BOARD_SIZE = 100; // grid size
+const BOARD_SIZE = 500; // grid size
 
 interface SelectedArea {
   start: { x: number; y: number }

@@ -9,14 +9,13 @@ export const fetchCache = 'force-no-store';
 export const dynamic = "force-dynamic"
 
 // WARNING: CHANGE ALSO IN INFO BORAD
-const BOARD_SIZE = 100; // grid
+const BOARD_SIZE = 500; // grid
 
 
 export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
   const [isLoading, setIsLoading] = useState(true)
-  // const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
 
   useEffect(() => {
