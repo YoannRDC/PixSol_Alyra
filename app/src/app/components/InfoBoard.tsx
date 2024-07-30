@@ -1,16 +1,14 @@
 'use client'
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { ColorWheel } from '@react-spectrum/color'
-import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Box, Button, Heading, Text, Flex, VStack, Input, Divider, useToast } from '@chakra-ui/react'
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useMutableDictionary } from '../hooks/useMutableDictionary';
-import { walletAdapterIdentity } from '@metaplex-foundation/js'
 import { SubmittedToast, SuccessToast, ErrorToast } from './ToastParty'
 
 // WARNING: CHANGE ALSO IN WITHDRAW PAGE
-const BOARD_SIZE = 1000; // grid size
+const BOARD_SIZE = 100; // grid size
 
 interface SelectedArea {
   start: { x: number; y: number }
