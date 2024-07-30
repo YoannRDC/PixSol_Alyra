@@ -122,29 +122,26 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   }, [selectionStart, selectionEnd, onSelectionChange, onOpen, isMobile])
 
   const renderPixel = useCallback((x: number, y: number) => {
-    const key = `x${x}y${y}`
-    const pixelStyle: React.CSSProperties = {
-      width: `${100 / boardSize}%`,
-      paddingBottom: `${100 / boardSize}%`,
-      border: '1px solid #ccc',
-      boxSizing: 'border-box',
-      position: 'relative',
-      backgroundColor: pixelData[key]?.color || 'white',
-    };
+    const key = `x${x}y${y}`;
+    const backgroundColor = pixelData[key]?.color || 'white';
+    const isSelected = currentSelection &&
+      x >= Math.min(currentSelection.start.x, currentSelection.end.x) &&
+      x <= Math.max(currentSelection.start.x, currentSelection.end.x) &&
+      y >= Math.min(currentSelection.start.y, currentSelection.end.y) &&
+      y <= Math.max(currentSelection.start.y, currentSelection.end.y);
 
-    if (currentSelection) {
-      const minX = Math.min(currentSelection.start.x, currentSelection.end.x);
-      const maxX = Math.max(currentSelection.start.x, currentSelection.end.x);
-      const minY = Math.min(currentSelection.start.y, currentSelection.end.y);
-      const maxY = Math.max(currentSelection.start.y, currentSelection.end.y);
-
-      if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-        pixelStyle.boxShadow = 'inset 0 0 0 2px blue';
-      }
-    }
-
-    return <Box key={key} style={pixelStyle} />
-  }, [pixelData, boardSize, currentSelection])
+      return (
+        <div
+          key={key}
+          className={`relative box-border border border-gray-300 ${isSelected ? 'shadow-inner shadow-blue-900' : ''}`}
+          style={{ width: `${100 / boardSize}%`, paddingBottom: `${100 / boardSize}%`, backgroundColor }}
+        >
+          {isSelected && (
+            <div className="absolute inset-0 bg-white opacity-30" />
+          )}
+        </div>
+      );
+    }, [pixelData, boardSize, currentSelection]);
 
   if (isLoading) {
     return <Box>Loading...</Box>
@@ -188,15 +185,9 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
             selectedArea={currentSelection}
             onColorChange={onColorChange}
             onImageUpload={onImageUpload}
-            //onBuy={onBuy}
           />
         </Box>
       )}
-
-      {/* Pour les gens sur mobiles par la suite
-      Il faut améliorer l'UI, mettre un meilleur bouton 
-      "Confirm Selection" + adapter un zoom pour sélectionner
-      les pixels. */}
   
       {isMobile && (
         <>
@@ -221,6 +212,7 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
                   selectedArea={currentSelection}
                   onColorChange={onColorChange}
                   onImageUpload={onImageUpload}
+                  // onBuy={onBuy}
                 />
               </ModalBody>
             </ModalContent>

@@ -104,7 +104,6 @@ export default function Home() {
             isLoading={isLoading}
             onColorChange={handleColorChange}
             onImageUpload={handleImageUpload}
-            //onBuy={handleBuy}
             isConnected={!!publicKey}
           />
         </Box>
