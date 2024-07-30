@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import {
   Box,
   Button,
-  VStack,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -12,7 +11,6 @@ import {
   ModalCloseButton,
   useBreakpointValue,
   Flex,
-  Center,
 } from '@chakra-ui/react'
 import InfoBoard from './InfoBoard'
 
@@ -23,7 +21,6 @@ interface PixelBoardProps {
   isLoading: boolean
   onColorChange: (color: string) => void
   onImageUpload: (image: File) => void
-  //onBuy: () => void
   isConnected: boolean
 }
 
@@ -34,8 +31,6 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
   isLoading,
   onColorChange,
   onImageUpload,
-  //onBuy,
-  isConnected
 }) => {
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
@@ -226,7 +221,6 @@ const PixelBoard: React.FC<PixelBoardProps> = ({
                   selectedArea={currentSelection}
                   onColorChange={onColorChange}
                   onImageUpload={onImageUpload}
-                  // onBuy={onBuy}
                 />
               </ModalBody>
             </ModalContent>

@@ -2,10 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import PixelBoard from './components/PixelBoard';
-import InfoBoard from './components/InfoBoard';
 import { Box, Heading, Flex } from '@chakra-ui/react';
+import PixelBoard from './components/PixelBoard';
 
 export const fetchCache = 'force-no-store'; 
 export const dynamic = "force-dynamic"
@@ -18,7 +16,7 @@ export default function Home() {
   const [selectedArea, setSelectedArea] = useState<{start: {x: number, y: number}, end: {x: number, y: number}} | null>(null)
   const [pixelData, setPixelData] = useState<{ [key: string]: { color: string, owner: string } }>({})
   const [isLoading, setIsLoading] = useState(true)
-  const { connection } = useConnection()
+  // const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
 
   useEffect(() => {
@@ -93,8 +91,6 @@ export default function Home() {
       img.src = URL.createObjectURL(image);
     }
   }, [selectedArea, pixelData]);
-
-  
 
   return (
     <Box className="flex flex-col h-screen p-4">
