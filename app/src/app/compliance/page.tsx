@@ -7,11 +7,11 @@ export default function LegalPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Mentions Légales</h1>
         <div className="prose max-w-none">
-          <p>PIXSOL est une plateforme de NFTs exploitée par PIXSOL.WORLD, une entité commerciale enregistrée dans la Free Zone de Dubaï, UAE. Notre plateforme est régulée par la Dubai Virtual Assets Regulatory Authority (VARA), conformément à la nouvelle législation sur les actifs numériques visant à positionner Dubaï comme un leader mondial dans le secteur des actifs virtuels.</p>
+          <p>PixSol_Alyra est une plateforme de NFTs exploitée par PIXSOL.WORLD, une entité commerciale enregistrée dans la Free Zone de Dubaï, UAE. Notre plateforme est régulée par la Dubai Virtual Assets Regulatory Authority (VARA), conformément à la nouvelle législation sur les actifs numériques visant à positionner Dubaï comme un leader mondial dans le secteur des actifs virtuels.</p>
           <p>Adresse légale : FZ Dubaï<br />
-          Email de contact : pixsol.compliance@world.com</p>
-          <p>Numéro d'enregistrement de la société : 56ZERtf78</p>
-          <p>Numéro license VARA : 00056897</p>
+          Email de contact : TBD</p>
+          <p>Numéro d'enregistrement de la société : TBD</p>
+          <p>Numéro license VARA : TBD</p>
 
           <h2 className="text-2xl font-semibold mt-6 mb-4">Régulation des actifs numériques</h2>
           <p>En tant qu'acteur régulé sous l'égide de la VARA, nous adhérons aux normes les plus élevées de transparence et de sécurité, garantissant que notre plateforme répond aux exigences réglementaires strictes imposées pour la protection des utilisateurs et la stabilité du marché.</p>
@@ -57,7 +57,7 @@ export default function LegalPage() {
           <p>Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment. Les utilisateurs seront informés de tout changement significatif.</p>
 
           <h2 className="text-2xl font-semibold mt-6 mb-4">7. Contact</h2>
-          <p>Pour toute question concernant cette politique de confidentialité, veuillez nous contacter à pixsol.compliance@world.com.</p>
+          <p>Pour toute question concernant cette politique de confidentialité, veuillez nous contacter à TBD.</p>
         </div>
       </div>
     </>

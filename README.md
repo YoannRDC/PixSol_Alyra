@@ -1,10 +1,10 @@
-# PixSol
+# PixSol_Alyra
 
 Projet : Landes Tom, Antoine Picot, Yoann Radenac
 
 ## Présentation générale
 
-Le projet PixSol est une application offrant un tableau interactif (Board) où les utilisateurs peuvent colorier des NFTs (appelés Pixels), uploader des images, et compléter les œuvres d'autres utilisateurs. PixSol_V1 tend à être le proof of concept d'un projet plus ambitieux souhaitant gamifier l'expérience NFT.
+Le projet PixSol_Alyra est une application offrant un tableau interactif (Board) où les utilisateurs peuvent colorier des NFTs (appelés Pixels), uploader des images, et compléter les œuvres d'autres utilisateurs. PixSol_Alyra tend à être le proof of concept d'un projet plus ambitieux souhaitant gamifier l'expérience NFT. PixSol_Alyra s'est arrêté avec la fin de notre formation. Rendez-vous sur PixSol.wolrd pour voir comment le projet évolue. 
 
 Fil conducteur du projet: Comment créer un tableau pixélisé de NFT sans que celui-ci soit figé dans le temps ? Comment créer un produit où investisseurs et joueurs trouvent leur intérêt ?
 
@@ -16,7 +16,7 @@ Le projet fait interagir deux acteurs complémentaires :
 
 Avec ce projet, nous souhaitons offrir un canal interactif à nos utilisateurs : certains apprécieront le côté ludique et l'évolution rapide du board, tandis que d'autres valoriseront les revenus et les possibilités d'échanges dynamiques des pixels sur le marché secondaire.
 
-## Pixsol_V1
+## PixSol_Alyra
 
 Dans un souci de transparence, la version actuelle que vous voyez est la V1 du projet. Cette version nous permet de tester nos premiers smart contracts sur Anchor, d'explorer les différentes possibilités et les limites, et d'adapter nos développements pour les versions futures en conséquence.
 
@@ -26,7 +26,7 @@ Cette version nous a permis d'explorer des sujets tels que : les cNFTs (Custom N
 
 Le projet est actuellement hébergé sur Vercel et est disponible sur l'url suivante.
 
-[Pixsol.world](https://pixsol.world/)
+[PixSol_Alyra](https://pix-sol.vercel.app/)
 
 URL: disponible
 
@@ -74,7 +74,7 @@ Permet au propriétaire de retirer les rentes associées à leur pixel (0.0005 S
 Pour lancer l'application en local sur le port 3000, utilisez un terminal :
 
 ```bash
-git clone https://github.com/YoannRDC/PixSol
+git clone https://github.com/YoannRDC/PixSol_Alyra
 cd app
 npm install
 npm run dev
